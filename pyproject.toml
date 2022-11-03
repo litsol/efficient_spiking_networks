@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
+#
+# SPDX-License-Identifier: MPL-2.0
+
 [project]
 name = "esn"
 version = "0.1.0"
@@ -43,6 +47,7 @@ clean = "rm -rf dist __pypackages__"
 test = "pytest ./tests"
 setup.shell = "pdm install --dev --no-editable && pdm run pre-commit install"
 setup.help = "Setup a dev environment"
+lint = "pre-commit run --all-files"
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -53,4 +58,6 @@ dev = [
     "flake8>=5.0.4",
     "ipdb>=0.13.9",
     "pylint>=2.15.5",
+    "pytest-cov>=4.0.0",
+    "requests>=2.28.1",
 ]
