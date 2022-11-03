@@ -1,0 +1,56 @@
+[project]
+name = "esn"
+version = "0.1.0"
+description = "Efficient Spikeing Networks"
+authors = [
+    {name = "Michael A. Guravage", email = "guravage@literatesolutions.com"},
+]
+dependencies = []
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+[project.optional-dependencies]
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[tool]
+
+[tool.black]
+line-length = 79
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage]
+[tool.coverage.run]
+source = ["esn"]
+[tool.coverage.report]
+exclude_lines = [
+    ".raise_for_status()",
+    "if TYPE_CHECKING:",
+]
+
+[tool.isort]
+profile = "black"
+
+[tool.pdm]
+version = {use_scm = true}
+
+[tool.pdm.scripts]
+clean = "rm -rf dist __pypackages__"
+test = "pytest ./tests"
+setup.shell = "pdm install --dev --no-editable && pdm run pre-commit install"
+setup.help = "Setup a dev environment"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=7.2.0",
+    "black>=22.10.0",
+    "hypothesis>=6.56.4",
+    "pre-commit>=2.20.0",
+    "flake8>=5.0.4",
+    "ipdb>=0.13.9",
+    "pylint>=2.15.5",
+]
