@@ -31,12 +31,30 @@ repos:
   - id: isort
     name: isort (pyi)
     types: [pyi]
+- repo: https://github.com/PyCQA/flake8
+  rev: 5.0.4
+  hooks:
+  -   id: flake8
 - repo: local
   hooks:
-  - id: pytest-cov
-    name: pytest
-    stages: [commit]
-    language: system
-    entry: pdm run pytest --cov --cov-fail-under=100
-    pass_filenames: false
-    types: [python]
+    - id: pylint
+      name: pylint
+      entry: pylint
+      language: system
+      types: [python]
+      require_serial: true
+      args:
+        [
+          "-rn", # Only display messages
+          "-sn", # Don't display the score
+          "--load-plugins=pylint.extensions.docparams", # Load an extension
+        ]
+    - id: pytest-cov
+      name: pytest
+      stages: [commit]
+      language: system
+      entry: pdm run pytest --cov --cov-fail-under=100
+      pass_filenames: false
+      types: [python]
+
+# finis

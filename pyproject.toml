@@ -9,7 +9,10 @@ description = "Efficient Spikeing Networks"
 authors = [
     {name = "Michael A. Guravage", email = "guravage@literatesolutions.com"},
 ]
-dependencies = []
+dependencies = [
+    "torch>=1.13.0",
+    "numpy>=1.23.4",
+]
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}

@@ -1,0 +1,132 @@
+# SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
+
+# SPDX-License-Identifier: CC0-1.0
+
+[MASTER]
+jobs=0
+
+
+[MESSAGES CONTROL]
+
+disable=R0801,
+         logging-fstring-interpolation,
+enable=useless-suppression
+
+[REPORTS]
+
+output-format=text
+reports=no
+
+
+[FORMAT]
+
+expected-line-ending-format=LF
+
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$|^# SPDX-.*$
+indent-after-paren=4
+indent-string='    '
+max-line-length=80
+single-line-if-stmt=no
+
+
+[REFACTORING]
+
+max-nested-blocks=4
+never-returning-functions=sys.exit
+
+
+[BASIC]
+
+argument-naming-style=snake_case
+attr-naming-style=snake_case
+bad-names=foo,
+          bar,
+          baz,
+          toto,
+          tutu,
+          tata
+class-attribute-rgx=^[a-z0-9_]*$|^[A-Z0-9_]*$
+class-naming-style=PascalCase
+const-naming-style=UPPER_CASE
+docstring-min-length=3
+function-naming-style=snake_case
+good-names=i,j,k,ex,Run,_,fp
+inlinevar-naming-style=snake_case
+method-naming-style=snake_case
+module-naming-style=snake_case
+variable-naming-style=snake_case
+
+
+[MISCELLANEOUS]
+
+notes=FIXME,XXX
+
+
+[SIMILARITIES]
+
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+min-similarity-lines=4
+
+
+[SPELLING]
+
+max-spelling-suggestions=4
+spelling-store-unknown-words=no
+
+
+[STRING]
+
+check-quote-consistency=yes
+check-str-concat-over-line-jumps=yes
+
+
+[DESIGN]
+
+max-args=6
+max-attributes=10
+max-bool-expr=5
+# we probably want to reduce this a bit, after some refactoring
+max-branches=12
+max-locals=15
+max-parents=7
+max-public-methods=20
+max-returns=6
+max-statements=50
+min-public-methods=1
+
+
+[IMPORTS]
+allow-wildcard-with-all=no
+analyse-fallback-blocks=no
+deprecated-modules=optparse,tkinter.tix,distutils
+known-third-party=enchant
+
+
+[CLASSES]
+defining-attr-methods=__init__,
+                      __new__,
+                      setUp,
+                      __post_init__
+exclude-protected=_asdict,
+                  _fields,
+                  _replace,
+                  _source,
+                  _make
+valid-classmethod-first-arg=cls
+valid-metaclass-classmethod-first-arg=cls
+
+
+[EXCEPTIONS]
+overgeneral-exceptions=BaseException,
+                       Exception
+
+
+[TYPECHECK]
+
+# List of members which are set dynamically and missed by Pylint inference
+# system, and so shouldn't trigger E1101 when accessed.
+generated-members=numpy.*, torch.*
+
+# finis
