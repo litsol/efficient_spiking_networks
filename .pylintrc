@@ -10,7 +10,10 @@ jobs=0
 
 disable=R0801,
          logging-fstring-interpolation,
-enable=useless-suppression
+	 abstract-method,
+	 arguments-differ,
+
+#enable=useless-suppression
 
 [REPORTS]
 

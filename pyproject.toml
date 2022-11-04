@@ -63,4 +63,5 @@ dev = [
     "pylint>=2.15.5",
     "pytest-cov>=4.0.0",
     "requests>=2.28.1",
+    "expecter>=0.3.0",
 ]

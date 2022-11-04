@@ -12,4 +12,7 @@ def test_version():
     assert __version__ == "0.1.0"
 
 
-# finis
+# import-error / E0401
+# Local Variables:
+# compile-command: "pyflakes test_esn.py; pylint-3 -d E0401 -f parseable test_esn.py" # NOQA, pylint: disable=C0301
+# End:
