@@ -18,6 +18,10 @@ LENS = 0.5
 R_M = 1
 BETA_VALUE = 0.184
 B_J0_VALUE = 1.6
+SCALE = 6.0
+HIGHT = 0.15
+
+# act_fun_adp = ActFun_adp.apply
 
 
 def gaussian(
@@ -33,41 +37,83 @@ def gaussian(
     )
 
 
-class ActFunAdp(torch.autograd.Function):
+def mem_update_adp(  # pylint: disable=R0913
+    inputs,
+    mem,
+    spike,
+    tau_adp,
+    b,  # pylint: disable=C0103
+    tau_m,
+    dt=1,  # pylint: disable=C0103
+    isAdapt=1,  # pylint: disable=C0103
+    device=None,  # pylint: disable=C0103
+):
+    """Function Docstring"""
+
+    alpha = torch.exp(-1.0 * dt / tau_m).to(device)
+    ro = torch.exp(-1.0 * dt / tau_adp).to(device)  # pylint: disable=C0103
+    if isAdapt:
+        beta = BETA_VALUE
+    else:
+        beta = 0.0
+
+    b = ro * b + (1 - ro) * spike
+    B = B_J0_VALUE + beta * b  # noqa:E501 pylint: disable=C0103
+
+    mem = mem * alpha + (1 - alpha) * R_M * inputs - B * spike * dt
+    inputs_ = mem - B
+    # spike = F.relu(inputs_)
+
+    # For details about calling the 'apply' member function,
+    # See: https://pytorch.org/docs/stable/autograd.html#function
+    spike = ActFun_adp.apply(inputs_)
+    return mem, spike, B, b
+
+
+def output_Neuron(
+    inputs, mem, tau_m, dt=1, device=None
+):  # pylint: disable=C0103
+    """
+    The read out neuron is leaky integrator without spike
+    """
+    alpha = torch.exp(-1.0 * dt / tau_m).to(device)
+    mem = mem * alpha + (1 - alpha) * inputs
+    return mem
+
+
+class ActFun_adp(torch.autograd.Function):  # pylint: disable=C0103
     """class docstring"""
 
     @staticmethod
-    def forward(ctx, inp):
+    def forward(ctx, i):
         """function docstring
         inp = membrane potential- threshold"""
-        ctx.save_for_backward(inp)
-        return inp.gt(0).float()  # is firing ???
+        ctx.save_for_backward(i)
+        return i.gt(0).float()  # is firing ???
 
     @staticmethod
     def backward(ctx, grad_output):
         """approximate the gradients"""
-        (inp,) = ctx.saved_tensors
-        grad_input = grad_output.clone()
-        # temp = abs(inp) < lens
-        scale = 6.0
-        hight = 0.15
+        (result,) = ctx.saved_tensors
+        # grad_input = grad_output.clone()
+        # temp = abs(result) < lens
         if SURROGRATE_TYPE == "G":
             temp = (
-                torch.exp(-(inp**2) / (2 * LENS**2))
+                torch.exp(-(result**2) / (2 * LENS**2))
                 / torch.sqrt(2 * torch.tensor(math.pi))
                 / LENS
             )
         elif SURROGRATE_TYPE == "MG":
             temp = (
-                gaussian(inp, mu=0.0, sigma=LENS) * (1.0 + hight)
-                - gaussian(inp, mu=LENS, sigma=scale * LENS) * hight
-                - gaussian(inp, mu=-LENS, sigma=scale * LENS) * hight
+                gaussian(result, mu=0.0, sigma=LENS) * (1.0 + HIGHT)
+                - gaussian(result, mu=LENS, sigma=SCALE * LENS) * HIGHT
+                - gaussian(result, mu=-LENS, sigma=SCALE * LENS) * HIGHT
             )
         elif SURROGRATE_TYPE == "linear":
-            temp = F.relu(1 - inp.abs())
+            temp = F.relu(1 - result.abs())
         elif SURROGRATE_TYPE == "slayer":
-            temp = torch.exp(-5 * inp.abs())
-        return grad_input * temp.float() * GAMMA
+            temp = torch.exp(-5 * result.abs())
+        return grad_output * temp.float() * GAMMA
 
 
 # import-error / E0401
