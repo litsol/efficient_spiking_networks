@@ -24,12 +24,15 @@ def test_gaussian_type():
 
 def test_gaussian_value():
     """Test gaussian value"""
-    assert torch.allclose(
-        TARGET, sn.gaussian(torch.ones(5)), rtol=1e-04, atol=1e-05
+    assert torch.allclose(  # pylint: disable=E1101
+        TARGET,
+        sn.gaussian(torch.ones(5)),  # pylint: disable=E1101
+        rtol=1e-04,
+        atol=1e-05,
     )
 
 
 # import-error / E0401
 # Local Variables:
-# compile-command: "pyflakes test_esn.py; pylint-3 -d E0401,E1101 -f parseable test_esn.py" # NOQA, pylint: disable=C0301
+# compile-command: "pyflakes test_esn.py; pylint-3 -d E0401 -f parseable test_esn.py" # NOQA, pylint: disable=C0301
 # End:
