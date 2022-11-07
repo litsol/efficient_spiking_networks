@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 [project]
-name = "esn"
+name = "efficient_spiking_networks"
 version = "0.1.0"
 description = "Efficient Spikeing Networks"
 authors = [
@@ -32,7 +32,7 @@ testpaths = ["tests"]
 
 [tool.coverage]
 [tool.coverage.run]
-source = ["esn"]
+source = ["efficient_spiking_networks"]
 [tool.coverage.report]
 exclude_lines = [
     ".raise_for_status()",

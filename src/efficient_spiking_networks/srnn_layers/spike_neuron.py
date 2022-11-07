@@ -46,8 +46,9 @@ def mem_update_adp(  # pylint: disable=R0913
     tau_m,
     dt=1,  # pylint: disable=C0103
     isAdapt=1,  # pylint: disable=C0103
-    device=None,  # pylint: disable=C0103
-):
+    device=None,
+):  # pylint: disable=C0103
+
     """Function Docstring"""
 
     alpha = torch.exp(-1.0 * dt / tau_m).to(device)
@@ -62,7 +63,7 @@ def mem_update_adp(  # pylint: disable=R0913
 
     mem = mem * alpha + (1 - alpha) * R_M * inputs - B * spike * dt
     inputs_ = mem - B
-    # spike = F.relu(inputs_)
+    spike = F.relu(inputs_)
 
     # For details about calling the 'apply' member function,
     # See: https://pytorch.org/docs/stable/autograd.html#function

@@ -53,7 +53,7 @@ repos:
       name: pytest
       stages: [commit]
       language: system
-      entry: pdm run pytest --cov --cov-fail-under=100
+      entry: pdm run pytest --cov --cov-fail-under=40
       pass_filenames: false
       types: [python]
 
