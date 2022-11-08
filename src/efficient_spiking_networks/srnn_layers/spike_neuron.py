@@ -83,11 +83,11 @@ def output_Neuron(
 
 
 class ActFun_adp(torch.autograd.Function):  # pylint: disable=C0103
-    """class docstring"""
+    """ActFun_adp class docstring"""
 
     @staticmethod
     def forward(ctx, i):
-        """function docstring
+        """forward member function docstring
         inp = membrane potential- threshold"""
         ctx.save_for_backward(i)
         return i.gt(0).float()  # is firing ???
