@@ -4,12 +4,14 @@
 
 """  module docstring """
 
+__all__ = ["Spike_Rnn"]
+
 import torch
 from torch import nn
 from torch.autograd import Variable
 
-import efficient_spiking_networks.srnn_layers.spike_dense as sd
-import efficient_spiking_networks.srnn_layers.spike_neuron as sn
+from . import spike_dense as sd
+from . import spike_neuron as sn
 
 B_J0 = sn.B_J0_VALUE
 
