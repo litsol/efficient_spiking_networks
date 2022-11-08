@@ -5,6 +5,7 @@
 """ test_esn """
 
 import torch
+from expecter import expect
 
 import efficient_spiking_networks.srnn_layers.spike_neuron as sn
 from efficient_spiking_networks import __version__
@@ -20,6 +21,12 @@ def test_version():
 def test_gaussian_type():
     """Test gaussian type"""
     assert isinstance(TARGET, torch.Tensor)
+
+
+def test_gaussian_type_error():
+    """Test gaussian type_error"""
+    with expect.raises(TypeError):
+        sn.gaussian(42)
 
 
 def test_gaussian_value():
