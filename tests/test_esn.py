@@ -4,11 +4,15 @@
 
 """ test_esn """
 
+from typing import Optional
+
 import torch
 from expecter import expect
 
 import efficient_spiking_networks.srnn_layers.spike_neuron as sn
 from efficient_spiking_networks import __version__
+from efficient_spiking_networks.utilities.decorators import initializer
+from efficient_spiking_networks.utilities.exceptions import InvalidContextError
 
 TARGET = torch.Tensor([0.1080, 0.1080, 0.1080, 0.1080, 0.1080])
 
@@ -37,6 +41,43 @@ def test_gaussian_value():
         rtol=1e-04,
         atol=1e-05,
     )
+
+
+def test_initializer_decorator():
+    """Test initializer decorator"""
+
+    class Bogus:  # pylint: disable=R0903
+        """Class Docstring"""
+
+        @initializer
+        def __init__(  # pylint: disable=R0913
+            self,
+            alabama: int,
+            alaska: int,
+            arizona: Optional[int] = None,
+            arkansas: Optional[str] = None,
+            california: float = 3.0,
+        ):
+            """Class member function docstring"""
+
+    bogus = Bogus(1, 2, arkansas=None)
+    assert bogus.alabama == 1  # pylint: disable=E1101
+    assert bogus.alaska == 2  # pylint: disable=E1101
+    assert bogus.arizona is None  # pylint: disable=E1101
+    assert bogus.arkansas is None  # pylint: disable=E1101
+    assert bogus.california == 3.0  # pylint: disable=E1101
+
+
+def test_initializer_decorator_context_exception():
+    """Test initializer decorator invalid context"""
+    with expect.raises(InvalidContextError):
+
+        class Bogus2:  # pylint: disable=R0903,W0612
+            """Class Docstring"""
+
+            @initializer
+            def improper_context():  # pylint: disable=E0211
+                """Class member function docstring"""
 
 
 # import-error / E0401

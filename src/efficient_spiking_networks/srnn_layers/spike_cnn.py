@@ -4,7 +4,7 @@
 
 """  module docstring """
 
-__all__ = ["Spike_Cov1D", "Spike_Cov2D"]
+__all__ = ["SpikeCov1D", "SpikeCov2D"]
 
 import numpy as np
 import torch
@@ -15,7 +15,7 @@ from . import spike_neuron as sn
 B_J0 = 1.6
 
 
-class Spike_Cov1D(nn.Module):  # pylint: disable=C0103,R0902
+class SpikeCov1D(nn.Module):  # pylint: disable=R0902
     """Spike_Cov1D class docstring"""
 
     def __init__(  # pylint: disable=R0913,R0914,W0231
@@ -28,11 +28,11 @@ class Spike_Cov1D(nn.Module):  # pylint: disable=C0103,R0902
         pool_size=2,
         pool_strides=2,
         dilation=1,
-        tauM=20,
-        tauAdp_inital=100,
+        tau_m=20,
+        tau_adp_inital=100,
         tau_initializer="normal",
-        tauM_inital_std=5,
-        tauAdp_inital_std=5,
+        tau_m_inital_std=5,
+        tau_adp_inital_std=5,
         is_adaptive=1,
         device="cpu",
     ):
@@ -78,8 +78,8 @@ class Spike_Cov1D(nn.Module):  # pylint: disable=C0103,R0902
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_size))
 
         if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tauM, tauM_inital_std)
-            nn.init.normal_(self.tau_adp, tauAdp_inital, tauAdp_inital_std)
+            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
+            nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
 
     def parameters(self):
         """parameters member function docstring"""
@@ -132,7 +132,7 @@ class Spike_Cov1D(nn.Module):  # pylint: disable=C0103,R0902
         return out.shape[1:]
 
 
-class Spike_Cov2D(nn.Module):  # pylint: disable=C0103,R0902
+class SpikeCov2D(nn.Module):  # pylint: disable=R0902
     """Spike_Cov2D docstring"""
 
     def __init__(  # pylint: disable=R0913,W0231
@@ -144,11 +144,11 @@ class Spike_Cov2D(nn.Module):  # pylint: disable=C0103,R0902
         pooling_type=None,
         pool_size=2,
         pool_strides=2,
-        tauM=20,
-        tauAdp_inital=100,
+        tau_m=20,
+        tau_adp_inital=100,
         tau_initializer="normal",
-        tauM_inital_std=5,
-        tauAdp_inital_std=5,
+        tau_m_inital_std=5,
+        tau_adp_inital_std=5,
         is_adaptive=1,
         device="cpu",
     ):
@@ -187,8 +187,8 @@ class Spike_Cov2D(nn.Module):  # pylint: disable=C0103,R0902
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_size))
 
         if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tauM, tauM_inital_std)
-            nn.init.normal_(self.tau_adp, tauAdp_inital, tauAdp_inital_std)
+            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
+            nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
 
     def parameters(self):
         """parameters member function docstring"""

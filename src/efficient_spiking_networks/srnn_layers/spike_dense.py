@@ -4,7 +4,7 @@
 
 """  module docstring """
 
-__all__ = ["Spike_Dense", "Spike_Bidense", "Readout_Integrator"]
+__all__ = ["SpikeDENSE", "SpikeBIDENSE", "ReadoutIntegrator"]
 
 import numpy as np
 import torch
@@ -13,7 +13,7 @@ from torch.autograd import Variable
 
 from . import spike_neuron as sn
 
-B_J0 = sn.B_J0_VALUE
+B_J0: float = sn.B_J0_VALUE
 
 
 def multi_normal_initilization(
@@ -48,18 +48,18 @@ def multi_normal_initilization(
     return param
 
 
-class Spike_Dense(nn.Module):  # pylint: disable=C0103,R0902
+class SpikeDENSE(nn.Module):
     """Spike_Dense class docstring"""
 
     def __init__(  # pylint: disable=R0913,W0231
         self,
         input_dim,
         output_dim,
-        tauM=20,
-        tauAdp_inital=200,
+        tau_m=20,
+        tau_adp_inital=200,
         tau_initializer="normal",
-        tauM_inital_std=5,
-        tauAdp_inital_std=5,
+        tau_m_inital_std=5,
+        tau_adp_inital_std=5,
         is_adaptive=1,
         device="cpu",
         bias=True,
@@ -79,14 +79,14 @@ class Spike_Dense(nn.Module):  # pylint: disable=C0103,R0902
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_dim))
 
         if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tauM, tauM_inital_std)
-            nn.init.normal_(self.tau_adp, tauAdp_inital, tauAdp_inital_std)
+            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
+            nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
         elif tau_initializer == "multi_normal":
             self.tau_m = multi_normal_initilization(
-                self.tau_m, tauM, tauM_inital_std
+                self.tau_m, tau_m, tau_m_inital_std
             )
             self.tau_adp = multi_normal_initilization(
-                self.tau_adp, tauAdp_inital, tauAdp_inital_std
+                self.tau_adp, tau_adp_inital, tau_adp_inital_std
             )
 
     def parameters(self):
@@ -130,7 +130,7 @@ class Spike_Dense(nn.Module):  # pylint: disable=C0103,R0902
         return self.mem, self.spike
 
 
-class Spike_Bidense(nn.Module):  # pylint: disable=C0103,R0902
+class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
     """Spike_Bidense class docstring"""
 
     def __init__(  # pylint: disable=R0913,W0231
@@ -138,11 +138,11 @@ class Spike_Bidense(nn.Module):  # pylint: disable=C0103,R0902
         input_dim1,
         input_dim2,
         output_dim,
-        tauM=20,
-        tauAdp_inital=100,
+        tau_m=20,
+        tau_adp_inital=100,
         tau_initializer="normal",
-        tauM_inital_std=5,
-        tauAdp_inital_std=5,
+        tau_m_inital_std=5,
+        tau_adp_inital_std=5,
         is_adaptive=1,
         device="cpu",
     ):
@@ -162,14 +162,14 @@ class Spike_Bidense(nn.Module):  # pylint: disable=C0103,R0902
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_dim))
 
         if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tauM, tauM_inital_std)
-            nn.init.normal_(self.tau_adp, tauAdp_inital, tauAdp_inital_std)
+            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
+            nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
         elif tau_initializer == "multi_normal":
             self.tau_m = multi_normal_initilization(
-                self.tau_m, tauM, tauM_inital_std
+                self.tau_m, tau_m, tau_m_inital_std
             )
             self.tau_adp = multi_normal_initilization(
-                self.tau_adp, tauAdp_inital, tauAdp_inital_std
+                self.tau_adp, tau_adp_inital, tau_adp_inital_std
             )
 
     def parameters(self):
@@ -208,16 +208,16 @@ class Spike_Bidense(nn.Module):  # pylint: disable=C0103,R0902
         return self.mem, self.spike
 
 
-class Readout_Integrator(nn.Module):  # pylint: disable=C0103,R0902
+class ReadoutIntegrator(nn.Module):
     """Redout_Integrator class docstring"""
 
     def __init__(  # pylint: disable=R0913,W0231
         self,
         input_dim,
         output_dim,
-        tauM=20,
+        tau_m=20,
         tau_initializer="normal",
-        tauM_inital_std=5,
+        tau_m_inital_std=5,
         device="cpu",
         bias=True,
     ):
@@ -234,7 +234,7 @@ class Readout_Integrator(nn.Module):  # pylint: disable=C0103,R0902
         self.tau_m = nn.Parameter(torch.Tensor(self.output_dim))
 
         if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tauM, tauM_inital_std)
+            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
 
     def parameters(self):
         """parameters member function docstring"""

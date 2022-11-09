@@ -4,7 +4,7 @@
 
 """  module docstring """
 
-__all__ = ["ActFun_adp"]
+__all__ = ["ActFunADP"]
 
 import math
 
@@ -14,16 +14,16 @@ import torch
 # from torch import nn
 from torch.nn import functional as F
 
-SURROGRATE_TYPE = "MG"
-GAMMA = 0.5
-LENS = 0.5
-R_M = 1
-BETA_VALUE = 0.184
-B_J0_VALUE = 1.6
-SCALE = 6.0
-HIGHT = 0.15
+SURROGRATE_TYPE: str = "MG"
+GAMMA: float = 0.5
+LENS: float = 0.5
+R_M: float = 1
+BETA_VALUE: float = 0.184
+B_J0_VALUE: float = 1.6
+SCALE: float = 6.0
+HIGHT: float = 0.15
 
-# act_fun_adp = ActFun_adp.apply
+# act_fun_adp = ActFunADP.apply
 
 
 def gaussian(
@@ -69,7 +69,7 @@ def mem_update_adp(  # pylint: disable=R0913
 
     # For details about calling the 'apply' member function,
     # See: https://pytorch.org/docs/stable/autograd.html#function
-    spike = ActFun_adp.apply(inputs_)
+    spike = ActFunADP.apply(inputs_)
     return mem, spike, B, b
 
 
@@ -84,8 +84,8 @@ def output_Neuron(
     return mem
 
 
-class ActFun_adp(torch.autograd.Function):  # pylint: disable=C0103
-    """ActFun_adp class docstring"""
+class ActFunADP(torch.autograd.Function):
+    """ActFunADP class docstring"""
 
     @staticmethod
     def forward(ctx, i):

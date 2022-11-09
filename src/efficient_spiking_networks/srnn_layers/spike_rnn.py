@@ -4,7 +4,7 @@
 
 """  module docstring """
 
-__all__ = ["Spike_Rnn"]
+__all__ = ["SpikeRNN"]
 
 import torch
 from torch import nn
@@ -13,24 +13,24 @@ from torch.autograd import Variable
 from . import spike_dense as sd
 from . import spike_neuron as sn
 
-B_J0 = sn.B_J0_VALUE
+B_J0: float = sn.B_J0_VALUE
 
 
-class Spike_Rnn(nn.Module):  # pylint: disable=C0103,R0902
+class SpikeRNN(nn.Module):  # pylint: disable=R0902
     """Spike_Rnn class docstring"""
 
     def __init__(  # pylint: disable=R0913,W0231
         self,
         input_dim,
         output_dim,
-        tauM=20,
-        tauAdp_inital=100,
+        tau_m=20,
+        tau_adp_inital=100,
         tau_initializer="normal",
-        tauM_inital_std=5,
-        tauAdp_inital_std=5,
+        tau_m_inital_std=5,
+        tau_adp_inital_std=5,
         is_adaptive=1,
         device="cpu",
-        bias=True,
+        bias: bool = True,
     ):
         """Class constructor member function"""
         super()
@@ -49,14 +49,14 @@ class Spike_Rnn(nn.Module):  # pylint: disable=C0103,R0902
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_dim))
 
         if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tauM, tauM_inital_std)
-            nn.init.normal_(self.tau_adp, tauAdp_inital, tauAdp_inital_std)
+            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
+            nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
         elif tau_initializer == "multi_normal":
             self.tau_m = sd.multi_normal_initilization(
-                self.tau_m, tauM, tauM_inital_std
+                self.tau_m, tau_m, tau_m_inital_std
             )
             self.tau_adp = sd.multi_normal_initilization(
-                self.tau_adp, tauAdp_inital, tauAdp_inital_std
+                self.tau_adp, tau_adp_inital, tau_adp_inital_std
             )
 
     def parameters(self):
