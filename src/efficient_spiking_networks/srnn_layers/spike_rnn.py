@@ -31,10 +31,10 @@ class SpikeRNN(nn.Module):  # pylint: disable=R0902
         is_adaptive=1,
         device="cpu",
         bias: bool = True,
-    ):
+    ) -> None:
         """Class constructor member function"""
         super()
-        self.mem = None
+        self.mem: Variable
         self.spike = None
         self.b = None  # pylint: disable=C0103
         self.input_dim = input_dim

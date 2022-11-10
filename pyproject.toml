@@ -50,7 +50,7 @@ version = {use_scm = true}
 [tool.pdm.scripts]
 clean = "rm -rf dist __pypackages__"
 test = "pytest ./tests"
-setup.shell = "pdm install --dev --no-editable && pdm run pre-commit install"
+setup.shell = "pdm install --dev && pdm run pre-commit install"
 setup.help = "Setup a dev environment"
 lint = "pre-commit run --all-files"
 

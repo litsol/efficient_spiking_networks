@@ -27,10 +27,11 @@ def initializer(fun):
     def wrapper(self, *args, **kargs):
         for name, arg in list(zip(specs.args[1:], args)) + list(kargs.items()):
             setattr(self, name, arg)
-        for i in range(len(specs.defaults)):
-            index = -(i + 1)
-            if not hasattr(self, specs.args[index]):
-                setattr(self, specs.args[index], specs.defaults[index])
+        if specs.defaults is not None:
+            for i in range(len(specs.defaults)):
+                index = -(i + 1)
+                if not hasattr(self, specs.args[index]):
+                    setattr(self, specs.args[index], specs.defaults[index])
         fun(self, *args, **kargs)
 
     return wrapper

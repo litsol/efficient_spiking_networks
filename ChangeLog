@@ -1,0 +1,9 @@
+SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
+
+SPDX-License-Identifier: CC0-1.0
+
+2022-11-10  Michael  <michael@literatesolutions.comx>
+
+	* pyproject.toml (setup): Remove the --no-editable flag from PDM's
+	setup script. If we are setting up our development environment, we
+	want to edit our code in situ and see the effects immediately.
