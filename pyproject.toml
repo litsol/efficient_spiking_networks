@@ -9,11 +9,13 @@ description = "Efficient Spikeing Networks"
 authors = [
     {name = "Michael A. Guravage", email = "guravage@literatesolutions.com"},
 ]
-dependencies = [
-    "torch>=1.13.0",
-    "numpy>=1.23.4",
-]
+dependencies = []
 requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: PyTorch",
+    "Intended Audience :: Developers",
+]
 readme = "README.md"
 license = {text = "MIT"}
 [project.optional-dependencies]
@@ -48,16 +50,19 @@ version = {use_scm = true}
 [tool.pdm.scripts]
 clean = "rm -rf dist __pypackages__"
 test = "pytest ./tests"
-setup.shell = "pdm install --dev && pdm run pre-commit install"
+setup.shell = "pdm install --dev --no-editable && pdm run pre-commit install"
 setup.help = "Setup a dev environment"
 lint = "pre-commit run --all-files"
 
 [tool.pdm.dev-dependencies]
 dev = [
+    "torch>=1.13.0",
+    "numpy>=1.23.4",
     "pytest>=7.2.0",
     "black>=22.10.0",
     "hypothesis>=6.56.4",
     "pre-commit>=2.20.0",
+    "mypy @ git+https://github.com/python/mypy.git",  # see python/mypy issue #10633 on GitHub
     "flake8>=5.0.4",
     "ipdb>=0.13.9",
     "pylint>=2.15.5",

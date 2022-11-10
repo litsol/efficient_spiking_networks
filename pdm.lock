@@ -243,6 +243,19 @@ requires_python = ">=3.6"
 summary = "McCabe checker, plugin for flake8"
 
 [[package]]
+name = "mypy"
+version = "1.0.0+dev.dbcbb3f5c3ef791c98088da0bd1dfa6cbf51f301"
+requires_python = ">=3.7"
+git = "https://github.com/python/mypy.git"
+revision = "dbcbb3f5c3ef791c98088da0bd1dfa6cbf51f301"
+summary = "Optional static typing for Python"
+dependencies = [
+    "mypy-extensions>=0.4.3",
+    "tomli>=1.1.0; python_version < \"3.11\"",
+    "typing-extensions>=3.10",
+]
+
+[[package]]
 name = "mypy-extensions"
 version = "0.4.3"
 summary = "Experimental type system extensions for programs checked with the mypy typechecker."
@@ -565,7 +578,7 @@ summary = "Module for decorators, wrappers and monkey patching."
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:e489497a4e2418f27d757f0c9a8a33fc588d0958a4ef81bb58dff306a4588d2b"
+content_hash = "sha256:b573d91af0d917ac0b529759e4e410ed011643cfa5bca5d9ada26d4cc132a289"
 
 [metadata.files]
 "appnope 0.1.3" = [
