@@ -1,6 +1,11 @@
-SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
+2022-11-11  Michael  <michael@ajax>
 
-SPDX-License-Identifier: CC0-1.0
+	* pdm.lock (name): Added bumpver.
+
+	* README.md (Version): Added bumpver version pattern.
+
+	* pyproject.toml (push): Added bumpver configuration and file
+	patterns.
 
 2022-11-10  Michael  <michael@literatesolutions.comx>
 

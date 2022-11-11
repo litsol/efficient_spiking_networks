@@ -47,6 +47,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "bumpver"
+version = "2022.1119"
+requires_python = ">=2.7"
+summary = "Bump version numbers in project files."
+dependencies = [
+    "click; python_version >= \"3.6\"",
+    "colorama>=0.4",
+    "lexid",
+    "pathlib2",
+    "setuptools>=45.0.0; python_version >= \"3.5\"",
+    "toml",
+]
+
+[[package]]
 name = "certifi"
 version = "2022.9.24"
 requires_python = ">=3.6"
@@ -228,6 +242,12 @@ requires_python = ">=3.7"
 summary = "A fast and thorough lazy object proxy."
 
 [[package]]
+name = "lexid"
+version = "2021.1006"
+requires_python = ">=2.7"
+summary = "Variable width build numbers with lexical ordering."
+
+[[package]]
 name = "matplotlib-inline"
 version = "0.1.6"
 requires_python = ">=3.5"
@@ -324,6 +344,14 @@ name = "parso"
 version = "0.8.3"
 requires_python = ">=3.6"
 summary = "A Python Parser"
+
+[[package]]
+name = "pathlib2"
+version = "2.3.7.post1"
+summary = "Object-oriented filesystem paths"
+dependencies = [
+    "six",
+]
 
 [[package]]
 name = "pathspec"
@@ -578,7 +606,7 @@ summary = "Module for decorators, wrappers and monkey patching."
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:b573d91af0d917ac0b529759e4e410ed011643cfa5bca5d9ada26d4cc132a289"
+content_hash = "sha256:354978dea9f2007c411a6a724cb8c24235dea4d5f83b774d28d2116c99341606"
 
 [metadata.files]
 "appnope 0.1.3" = [
@@ -623,6 +651,10 @@ content_hash = "sha256:b573d91af0d917ac0b529759e4e410ed011643cfa5bca5d9ada26d4cc
     {url = "https://files.pythonhosted.org/packages/e3/b4/9203f1a0c99aa30389b61fa8cb54bc9f4bf16ac3aa74630c6b974ed3f3b0/black-22.10.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1e464456d24e23d11fced2bc8c47ef66d471f845c7b7a42f3bd77bf3d1789650"},
     {url = "https://files.pythonhosted.org/packages/f2/23/f4278377cabf882298b4766e977fd04377f288d1ccef706953076a1e0598/black-22.10.0-1fixedarch-cp39-cp39-macosx_11_0_x86_64.whl", hash = "sha256:e41a86c6c650bcecc6633ee3180d80a025db041a8e2398dcc059b3afa8382cd4"},
     {url = "https://files.pythonhosted.org/packages/ff/ce/22281871536b3d79474fd44d48dad48f7cbc5c3982bddf6a7495e7079d00/black-22.10.0-cp310-cp310-win_amd64.whl", hash = "sha256:819dc789f4498ecc91438a7de64427c73b45035e2e3680c92e18795a839ebb66"},
+]
+"bumpver 2022.1119" = [
+    {url = "https://files.pythonhosted.org/packages/34/e4/c9ca423e253ba606e7ac65ec18b4abd4f4a672f421dab00ab3dabed518c9/bumpver-2022.1119-py2.py3-none-any.whl", hash = "sha256:c4cc84a881bf945510a4831200fd082c3520665c61e73ff7732e26249a6a86c9"},
+    {url = "https://files.pythonhosted.org/packages/86/05/510f620a80ffb07c8f728015e955934e3a77d95c45b61a0d7dd2c4ad1af5/bumpver-2022.1119.tar.gz", hash = "sha256:afed711d286403ed848daabba6006318ed2fb8d4c1f192466ac20756afc31a61"},
 ]
 "certifi 2022.9.24" = [
     {url = "https://files.pythonhosted.org/packages/1d/38/fa96a426e0c0e68aabc68e896584b83ad1eec779265a028e156ce509630e/certifi-2022.9.24-py3-none-any.whl", hash = "sha256:90c1a32f1d68f940488354e36370f6cca89f0f106db09518524c88d6ed83f382"},
@@ -779,6 +811,10 @@ content_hash = "sha256:b573d91af0d917ac0b529759e4e410ed011643cfa5bca5d9ada26d4cc
     {url = "https://files.pythonhosted.org/packages/f5/dc/11168f6697ed68ec29a4f0887308c0d7836d96148a81eb0abb7b8e77b8e8/lazy_object_proxy-1.8.0-pp39-pypy39_pp73-any.whl", hash = "sha256:ce58b2b3734c73e68f0e30e4e725264d4d6be95818ec0a0be4bb6bf9a7e79aa8"},
     {url = "https://files.pythonhosted.org/packages/f6/71/e0dbe4172135aca4b4f657cf15fefd34247b5392ae42cf2ca2583dfa332f/lazy_object_proxy-1.8.0-cp37-cp37m-win_amd64.whl", hash = "sha256:6f593f26c470a379cf7f5bc6db6b5f1722353e7bf937b8d0d0b3fba911998858"},
 ]
+"lexid 2021.1006" = [
+    {url = "https://files.pythonhosted.org/packages/60/0b/28a3f9abc75abbf1fa996eb2dd77e1e33a5d1aac62566e3f60a8ec8b8a22/lexid-2021.1006.tar.gz", hash = "sha256:509a3a4cc926d3dbf22b203b18a4c66c25e6473fb7c0e0d30374533ac28bafe5"},
+    {url = "https://files.pythonhosted.org/packages/cf/e3/35764404a4b7e2021be1f88f42264c2e92e0c4720273559a62461ce64a47/lexid-2021.1006-py2.py3-none-any.whl", hash = "sha256:5526bb5606fd74c7add23320da5f02805bddd7c77916f2dc1943e6bada8605ed"},
+]
 "matplotlib-inline 0.1.6" = [
     {url = "https://files.pythonhosted.org/packages/d9/50/3af8c0362f26108e54d58c7f38784a3bdae6b9a450bab48ee8482d737f44/matplotlib-inline-0.1.6.tar.gz", hash = "sha256:f887e5f10ba98e8d2b150ddcf4702c1e5f8b3a20005eb0f74bfdbd360ee6f304"},
     {url = "https://files.pythonhosted.org/packages/f2/51/c34d7a1d528efaae3d8ddb18ef45a41f284eacf9e514523b191b7d0872cc/matplotlib_inline-0.1.6-py3-none-any.whl", hash = "sha256:f1f41aab5328aa5aaea9b16d083b128102f8712542f819fe7e6a420ff581b311"},
@@ -849,6 +885,10 @@ content_hash = "sha256:b573d91af0d917ac0b529759e4e410ed011643cfa5bca5d9ada26d4cc
 "parso 0.8.3" = [
     {url = "https://files.pythonhosted.org/packages/05/63/8011bd08a4111858f79d2b09aad86638490d62fbf881c44e434a6dfca87b/parso-0.8.3-py2.py3-none-any.whl", hash = "sha256:c001d4636cd3aecdaf33cbb40aebb59b094be2a74c556778ef5576c175e19e75"},
     {url = "https://files.pythonhosted.org/packages/a2/0e/41f0cca4b85a6ea74d66d2226a7cda8e41206a624f5b330b958ef48e2e52/parso-0.8.3.tar.gz", hash = "sha256:8c07be290bb59f03588915921e29e8a50002acaf2cdc5fa0e0114f91709fafa0"},
+]
+"pathlib2 2.3.7.post1" = [
+    {url = "https://files.pythonhosted.org/packages/09/eb/4af4bcd5b8731366b676192675221c5324394a580dfae469d498313b5c4a/pathlib2-2.3.7.post1-py2.py3-none-any.whl", hash = "sha256:5266a0fd000452f1b3467d782f079a4343c63aaa119221fbdc4e39577489ca5b"},
+    {url = "https://files.pythonhosted.org/packages/31/51/99caf463dc7c18eb18dad1fffe465a3cf3ee50ac3d1dccbd1781336fe9c7/pathlib2-2.3.7.post1.tar.gz", hash = "sha256:9fe0edad898b83c0c3e199c842b27ed216645d2e177757b2dd67384d4113c641"},
 ]
 "pathspec 0.10.1" = [
     {url = "https://files.pythonhosted.org/packages/24/9f/a9ae1e6efa11992dba2c4727d94602bd2f6ee5f0dedc29ee2d5d572c20f7/pathspec-0.10.1.tar.gz", hash = "sha256:7ace6161b621d31e7902eb6b5ae148d12cfd23f4a249b9ffb6b9fee12084323d"},

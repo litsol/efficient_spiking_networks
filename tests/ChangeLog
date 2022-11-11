@@ -1,0 +1,3 @@
+2022-11-11  Michael  <michael@ajax>
+
+	* test_esn.py (test_version): Added bumpver version stub.

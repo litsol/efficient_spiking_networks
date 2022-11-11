@@ -69,4 +69,29 @@ dev = [
     "pytest-cov>=4.0.0",
     "requests>=2.28.1",
     "expecter>=0.3.0",
+    "bumpver>=2022.1119",
+]
+
+[tool.bumpver]
+current_version = "2022.1001-alpha"
+version_pattern = "YYYY.BUILD[-TAG]"
+commit_message = "bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+]
+"README.md" = [
+	    "{version}",
+]
+
+"src/efficient_spiking_networks/__init__.py" = [
+    '^__version__ = "{version}"$',
+]
+
+"tests/test_esn.py" = [
+    'assert __version__ == "{version}"$',
 ]

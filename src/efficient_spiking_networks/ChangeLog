@@ -1,0 +1,3 @@
+2022-11-11  Michael  <michael@ajax>
+
+	* __init__.py: Added bumpver version pattern.
