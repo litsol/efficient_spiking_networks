@@ -19,7 +19,7 @@ TARGET = torch.Tensor([0.1080, 0.1080, 0.1080, 0.1080, 0.1080])
 
 def test_version():
     """sanity test"""
-    assert __version__ == "2022.42"
+    assert __version__ == "2022.1002-alpha"
 
 
 def test_gaussian_type():

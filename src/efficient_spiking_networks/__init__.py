@@ -4,6 +4,6 @@
 
 """ __init__ """
 
-__version__ = "2022.42"
+__version__ = "2022.1002-alpha"
 
 # finis

@@ -1,5 +1,5 @@
 Efficient Spikeing Networks
 
-Version: 2022.42
+Version: 2022.1002-alpha
 
 # finis
