@@ -9,7 +9,10 @@ description = "Efficient Spikeing Networks"
 authors = [
     {name = "Michael A. Guravage", email = "guravage@literatesolutions.com"},
 ]
-dependencies = []
+dependencies = [
+    "torch>=1.13.0",
+    "numpy>=1.23.4",
+]
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -56,8 +59,6 @@ lint = "pre-commit run --all-files"
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "torch>=1.13.0",
-    "numpy>=1.23.4",
     "pytest>=7.2.0",
     "black>=22.10.0",
     "hypothesis>=6.56.4",

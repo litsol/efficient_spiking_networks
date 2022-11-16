@@ -18,7 +18,7 @@ B_J0 = 1.6
 class SpikeCov1D(nn.Module):  # pylint: disable=R0902
     """Spike_Cov1D class docstring"""
 
-    def __init__(  # pylint: disable=R0913,R0914,W0231
+    def __init__(  # pylint: disable=R0913,R0914
         self,
         input_size,
         output_dim,
@@ -37,7 +37,7 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
         device="cpu",
     ):
         """Class constructor member function docstring"""
-        super()
+        super().__init__()
         self.mem = None
         self.spike = None
         self.b = None  # pylint: disable=C0103
@@ -135,7 +135,7 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
 class SpikeCov2D(nn.Module):  # pylint: disable=R0902
     """Spike_Cov2D docstring"""
 
-    def __init__(  # pylint: disable=R0913,W0231
+    def __init__(  # pylint: disable=R0913
         self,
         input_size,
         output_dim,
@@ -153,7 +153,7 @@ class SpikeCov2D(nn.Module):  # pylint: disable=R0902
         device="cpu",
     ):
         """Class constructor member function docstring"""
-        super()
+        super().__init__()
         self.mem = None
         self.spike = None
         self.b = None  # pylint: disable=C0103

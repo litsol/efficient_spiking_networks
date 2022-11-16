@@ -65,7 +65,7 @@ class SpikeDENSE(nn.Module):
         bias=True,
     ):
         """Class constructor member function docstring"""
-        super()
+        super().__init__()
         self.mem = None
         self.spike = None
         self.b = None  # pylint: disable=C0103
@@ -133,7 +133,7 @@ class SpikeDENSE(nn.Module):
 class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
     """Spike_Bidense class docstring"""
 
-    def __init__(  # pylint: disable=R0913,W0231
+    def __init__(  # pylint: disable=R0913
         self,
         input_dim1,
         input_dim2,
@@ -147,7 +147,7 @@ class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
         device="cpu",
     ):
         """Class constructor member function docstring"""
-        super()
+        super().__init__()
         self.mem = None
         self.spike = None
         self.b = None  # pylint: disable=C0103
@@ -211,7 +211,7 @@ class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
 class ReadoutIntegrator(nn.Module):
     """Redout_Integrator class docstring"""
 
-    def __init__(  # pylint: disable=R0913,W0231
+    def __init__(  # pylint: disable=R0913
         self,
         input_dim,
         output_dim,
@@ -222,7 +222,7 @@ class ReadoutIntegrator(nn.Module):
         bias=True,
     ):
         """Class constructor member function"""
-        super()
+        super().__init__()
         self.mem = None
         self.spike = None
         self.b = None  # pylint: disable=C0103

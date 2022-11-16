@@ -19,7 +19,7 @@ B_J0: float = sn.B_J0_VALUE
 class SpikeRNN(nn.Module):  # pylint: disable=R0902
     """Spike_Rnn class docstring"""
 
-    def __init__(  # pylint: disable=R0913,W0231
+    def __init__(  # pylint: disable=R0913
         self,
         input_dim,
         output_dim,
@@ -33,7 +33,7 @@ class SpikeRNN(nn.Module):  # pylint: disable=R0902
         bias: bool = True,
     ) -> None:
         """Class constructor member function"""
-        super()
+        super().__init__()
         self.mem: Variable
         self.spike = None
         self.b = None  # pylint: disable=C0103

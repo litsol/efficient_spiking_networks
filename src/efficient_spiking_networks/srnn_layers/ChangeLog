@@ -1,3 +1,10 @@
+2022-11-16  Michael Guravage  <michael@odysseus>
+
+	* spike_neuron.py (mem_update_adp): Removed unnecessary noqa:E501 exception from line 64.
+	* spike_rnn.py (SpikeRNN.__init__):  Call super().__init__() correctly.
+	* spike_cnn.py (SpikeCov1D.__init__, Spike_Cov2D.__init__): Call super().__init__() correctly.
+	* spike_dense.py (SpikeDENSE.__init__, SpikeBIDENSE.__init__, ReadoutIntegrator.__init__): Call super().__init__() correctly.
+
 2022-11-10  Michael  <michael@literatesolutions.com>
 
 	* spike_rnn.py (SpikeRNN): Started type hinting.

@@ -1,3 +1,8 @@
+2022-11-16  Michael Guravage  <michael@odysseus>
+
+	* pyproject.toml (dependencies): On second thought, move torch and
+	numpy from developemnt to package dependencies.
+
 2022-11-11  Michael  <michael@ajax>
 
 	* pdm.lock (name): Added bumpver.

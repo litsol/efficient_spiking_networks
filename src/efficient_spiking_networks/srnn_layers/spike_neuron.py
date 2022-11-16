@@ -61,7 +61,7 @@ def mem_update_adp(  # pylint: disable=R0913
         beta = 0.0
 
     b = ro * b + (1 - ro) * spike
-    B = B_J0_VALUE + beta * b  # noqa:E501 pylint: disable=C0103
+    B = B_J0_VALUE + beta * b  # pylint: disable=C0103
 
     mem = mem * alpha + (1 - alpha) * R_M * inputs - B * spike * dt
     inputs_ = mem - B
