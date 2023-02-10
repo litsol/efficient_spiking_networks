@@ -1,3 +1,9 @@
+2023-02-08  Michael Guravage  <michael@odysseus>
+
+	* .pre-commit-config.yaml (repos): Update isort to version
+	5.12.0. Running pre-commit was complaining about isort. Upgrading
+	to the latest version silenced the errors.
+
 2022-11-16  Michael Guravage  <michael@odysseus>
 
 	* pyproject.toml (dependencies): On second thought, move torch and

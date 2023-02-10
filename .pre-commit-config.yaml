@@ -20,17 +20,17 @@ repos:
   hooks:
   - id: reuse
 - repo: https://github.com/pycqa/isort
-  rev: 5.10.1
+  rev: 5.12.0
   hooks:
   - id: isort
     name: isort (python)
     types: [python]
-  - id: isort
-    name: isort (cython)
-    types: [cython]
-  - id: isort
-    name: isort (pyi)
-    types: [pyi]
+#   - id: isort
+#     name: isort (cython)
+#     types: [cython]
+#   - id: isort
+#     name: isort (pyi)
+#     types: [pyi]
 - repo: https://github.com/PyCQA/flake8
   rev: 5.0.4
   hooks:

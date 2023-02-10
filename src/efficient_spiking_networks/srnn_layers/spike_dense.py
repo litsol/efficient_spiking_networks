@@ -19,7 +19,13 @@ B_J0: float = sn.B_J0_VALUE
 def multi_normal_initilization(
     param, means=[10, 200], stds=[5, 20]
 ):  # pylint: disable=W0102
-    """multi_normal_initialization function docstring"""
+    """multi_normal_initialization function
+
+    The tensor returned is composed of multiple, equal length
+    partitions each drawn from a normal distribution described
+    by a mean and std. The shape of the returned tensor is the same
+    at the original input tensor."""
+
     shape_list = param.shape
     if len(shape_list) == 1:
         num_total = shape_list[0]
@@ -35,6 +41,10 @@ def multi_normal_initilization(
             a
             + np.random.normal(means[i], stds[i], size=num_per_group).tolist()
         )
+
+        # By definition range(len(means)) runs from 0 to (len(means)-1).
+        # This if will never be true.
+
         if i == len(means):
             a = (  # pylint: disable=C0103
                 a
@@ -75,13 +85,25 @@ class SpikeDENSE(nn.Module):
         self.device = device
 
         self.dense = nn.Linear(input_dim, output_dim, bias=bias)
+
+        # Parameters are Tensor subclasses, that have a very special
+        # property when used with Module s - when they’re assigned as
+        # Module attributes they are automatically added to the list
+        # of its parameters, and will appear e.g. in parameters() iterator.
         self.tau_m = nn.Parameter(torch.Tensor(self.output_dim))
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_dim))
 
         if tau_initializer == "normal":
+            # Initialize self.tau_m and self.tau_adp from a single
+            # normal distributions.
             nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
             nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
         elif tau_initializer == "multi_normal":
+            # Initialize self.tau_m and self.tau_adp from from
+            # multiple normal distributions. tau_m and tar_adp_initial
+            # must be lists of means and tar_m_initial_std and
+            # tar_adp_initial_std must be lists of standard
+            # deviations.
             self.tau_m = multi_normal_initilization(
                 self.tau_m, tau_m, tau_m_inital_std
             )
@@ -90,26 +112,37 @@ class SpikeDENSE(nn.Module):
             )
 
     def parameters(self):
-        """parameter member function docstring"""
+        """Return a list of parameters being trained."""
+        # The latter two are module parameters; the first two aren't
+        # Where is dense.weight defined or assigned?
         return [self.dense.weight, self.dense.bias, self.tau_m, self.tau_adp]
 
     def set_neuron_state(self, batch_size):
-        """set_neuron_state member function docstring"""
+        """Initialize mem, spike and b tensors.
+
+        The Variable API has been deprecated: Variables are no
+        longer necessary to use autograd with tensors. Autograd
+        automatically supports Tensors with requires_grad set to
+        True.
+        """
         # self.mem = (torch.rand(batch_size, self.output_dim) * self.b_j0).to(
         #     self.device
         # )
         self.mem = Variable(
             torch.zeros(batch_size, self.output_dim) * B_J0
         ).to(self.device)
+
         self.spike = Variable(torch.zeros(batch_size, self.output_dim)).to(
             self.device
         )
+
         self.b = Variable(torch.ones(batch_size, self.output_dim) * B_J0).to(
             self.device
         )
 
     def forward(self, input_spike):
-        """forward member function docstring"""
+        """SpikeDENSE forward pass"""
+
         d_input = self.dense(input_spike.float())
         (
             self.mem,
@@ -224,8 +257,11 @@ class ReadoutIntegrator(nn.Module):
         """Class constructor member function"""
         super().__init__()
         self.mem = None
+
+        # UNUSED?!
         self.spike = None
         self.b = None  # pylint: disable=C0103
+
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.device = device
@@ -233,6 +269,7 @@ class ReadoutIntegrator(nn.Module):
         self.dense = nn.Linear(input_dim, output_dim, bias=bias)
         self.tau_m = nn.Parameter(torch.Tensor(self.output_dim))
 
+        # Why use an if statement if there is only one path?
         if tau_initializer == "normal":
             nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
 
@@ -254,7 +291,6 @@ class ReadoutIntegrator(nn.Module):
         return self.mem
 
 
-# import-error / E0401
 # Local Variables:
 # compile-command: "pyflakes spike_dense.py; pylint-3 -d E0401 -f parseable spike_dense.py" # NOQA, pylint: disable=C0301
 # End:

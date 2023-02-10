@@ -1,0 +1,50 @@
+%% SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
+
+%% SPDX-License-Identifier: CC0-1.0
+
+
+\definetyping[LUA]
+\setuptyping[LUA][option=LUA]
+\setuppapersize [A4,landscape]
+
+\setupheadertexts[chapter]
+\setupheadertexts[][pagenumber][pagenumber][]
+\setuplinenumbering[location=outer, step=5, color=blue, distance=1em]
+
+  \starttext
+
+  \completecontent
+
+  \chapter{srnn_fin.py}
+    \startlinenumbering
+      \typefile[LUA]{GSC/srnn_fin.py}
+    \stoplinenumbering
+  \chapter{data.py}
+    \startlinenumbering
+      \typefile[LUA]{GSC/data.py}
+    \stoplinenumbering
+  \chapter{optim.py}
+    \startlinenumbering
+      \typefile[LUA]{GSC/optim.py}
+    \stoplinenumbering
+  \chapter{utils.pys}
+    \startlinenumbering
+      \typefile[LUA]{GSC/utils.py}
+    \stoplinenumbering
+  \chapter{spike_rnn.py}
+    \startlinenumbering
+      \typefile[LUA]{efficient_spiking_networks/srnn_layers/spike_rnn.py}
+    \stoplinenumbering
+  \chapter{spike_cnn.py}
+    \startlinenumbering
+      \typefile[LUA]{efficient_spiking_networks/srnn_layers/spike_cnn.py}
+    \stoplinenumbering
+  \chapter{spike_dense.py}
+    \startlinenumbering
+      \typefile[LUA]{efficient_spiking_networks/srnn_layers/spike_dense.py}
+    \stoplinenumbering
+  \chapter{spike_neuron.py}
+    \startlinenumbering
+      \typefile[LUA]{efficient_spiking_networks/srnn_layers/spike_neuron.py}
+    \stoplinenumbering
+\stoptext

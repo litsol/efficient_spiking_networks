@@ -105,7 +105,6 @@ class SpikeRNN(nn.Module):  # pylint: disable=R0902
         return self.mem, self.spike
 
 
-# import-error / E0401
 # Local Variables:
 # compile-command: "pyflakes spike_rnn.py; pylint-3 -d E0401 -f parseable spike_rnn.py" # NOQA, pylint: disable=C0301
 # End:

@@ -605,8 +605,8 @@ requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 summary = "Module for decorators, wrappers and monkey patching."
 
 [metadata]
-lock_version = "4.0"
-content_hash = "sha256:354978dea9f2007c411a6a724cb8c24235dea4d5f83b774d28d2116c99341606"
+lock_version = "4.1"
+content_hash = "sha256:cd23f993e93414bd90a729929ac11333a7b9ec9a9c61641bfcb9ea44f861d7aa"
 
 [metadata.files]
 "appnope 0.1.3" = [

@@ -77,6 +77,9 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
         self.tau_m = nn.Parameter(torch.Tensor(self.output_size))
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_size))
 
+        # if tau_initializer other than 'normal' this block is not
+        # executed and self.tau_m and self.tau_adp are not
+        # initialized.
         if tau_initializer == "normal":
             nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
             nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
@@ -91,9 +94,11 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
             torch.zeros(batch_size, self.output_size[0], self.output_size[1])
             * B_J0
         ).to(self.device)
+
         self.spike = torch.zeros(
             batch_size, self.output_size[0], self.output_size[1]
         ).to(self.device)
+
         self.b = (
             torch.ones(batch_size, self.output_size[0], self.output_size[1])
             * B_J0
@@ -237,7 +242,6 @@ class SpikeCov2D(nn.Module):  # pylint: disable=R0902
         return out.shape[1:]
 
 
-# import-error / E0401
 # Local Variables:
 # compile-command: "pyflakes spike_cnn.py; pylint-3 -d E0401 -f parseable spike_cnn.py" # NOQA, pylint: disable=C0301
 # End:
