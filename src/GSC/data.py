@@ -205,7 +205,7 @@ class MelSpectrogram:
     def __call__(self, wav):
 
         S = librosa.feature.melspectrogram(
-            wav,
+            y=wav,
             sr=self.sr,
             n_fft=self.n_fft,
             hop_length=self.hop_length,
@@ -239,6 +239,16 @@ class Rescale:
     def __call__(self, input):
 
         std = np.std(input, axis=1, keepdims=True)
+        std[std == 0] = 1
+
+        return input / std
+
+
+class Normalize:
+    def __call__(self, input):
+
+        input_ = (input > 0.1) * input
+        std = np.std(input_, axis=1, keepdims=True)
         std[std == 0] = 1
 
         return input / std

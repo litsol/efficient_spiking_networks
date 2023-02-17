@@ -12,6 +12,9 @@ authors = [
 dependencies = [
     "torch>=1.13.0",
     "numpy>=1.23.4",
+    "librosa>=0.9.2",
+    "matplotlib>=3.7.0",
+    "torchvision>=0.14.1"
 ]
 requires-python = ">=3.10"
 classifiers = [
@@ -31,6 +34,14 @@ build-backend = "pdm.pep517.api"
 
 [tool.black]
 line-length = 79
+exclude = '''
+/(
+    src/GSC/data.py
+  | src/GSC/optim.py
+  | src/srnn_fin.py
+  | utils.py
+)/
+'''
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -46,6 +57,7 @@ exclude_lines = [
 
 [tool.isort]
 profile = "black"
+skip= ["data.py","optim.py","srnn_fin.py","utils.py"]
 
 [tool.pdm]
 version = {use_scm = true}

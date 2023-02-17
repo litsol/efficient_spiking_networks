@@ -1,0 +1,8 @@
+2023-02-17  Michael Guravage  <michael@odysseus>
+
+	* srnn_fin.py: Many small changes to get it running - almost.
+
+	* data.py (MelSpectrogram.__call__): Pass wav as a positional
+	argument, i.e. y=wav.
+
+	(Normalize): Coppied this class from Bojian's SoLi/data.py.

@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
 #
 # SPDX-License-Identifier: MPL-2.0
@@ -18,13 +20,20 @@ import scipy.io.wavfile as wav
 
 # from tqdm import tqdm_notebook
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 import torchvision
 from data import MelSpectrogram, Normalize, Pad, Rescale, SpeechCommandsDataset
 from matplotlib.gridspec import GridSpec
 from optim import RAdam
-
-# from torch.optim.lr_scheduler import ExponentialLR, LambdaLR, MultiStepLR, StepLR
+from torch.optim.lr_scheduler import (
+    ExponentialLR,
+    LambdaLR,
+    MultiStepLR,
+    StepLR,
+)
 from torch.utils.data import DataLoader
+from utils import generate_random_silence_files
 
 dtype = torch.float
 torch.manual_seed(0)
@@ -32,8 +41,8 @@ torch.manual_seed(0)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Directories
-train_data_root = "../data/speech_commands/train"
-test_data_root = "../data/speech_commands/test"
+train_data_root = "/export/scratch2/guravage/GSD"
+test_data_root = "/export/scratch2/guravage/GSD"
 
 # ls directories and folders in train_data_root folder
 training_words = os.listdir(train_data_root)
@@ -192,14 +201,11 @@ test_dataloader = DataLoader(
     collate_fn=collate_fn,
 )
 
-#####################################################################################################################3
-# create network
+import efficient_spiking_networks.srnn_layers.spike_dense as sd
+import efficient_spiking_networks.srnn_layers.spike_neuron as sn
+import efficient_spiking_networks.srnn_layers.spike_rnn as sr
 
-from SRNN_layers.spike_dense import *
-from SRNN_layers.spike_neuron import *
-from SRNN_layers.spike_rnn import *
-
-thr_func = ActFun_adp.apply
+thr_func = sn.ActFunADP.apply
 is_bias = True
 
 
@@ -210,30 +216,30 @@ class RNN_spike(nn.Module):
         super(RNN_spike, self).__init__()
         n = 256
         # is_bias=False
-        self.dense_1 = spike_dense(
+        self.dense_1 = sd.SpikeDENSE(
             40 * 3,
             n,
-            tauAdp_inital_std=50,
-            tauAdp_inital=200,
-            tauM=20,
-            tauM_inital_std=5,
+            tau_adp_inital_std=50,
+            tau_adp_inital=200,
+            tau_m=20,
+            tau_m_inital_std=5,
             device=device,
             bias=is_bias,
         )
-        self.rnn_1 = spike_rnn(
+        self.rnn_1 = sr.SpikeRNN(
             n,
             n,
-            tauAdp_inital_std=50,
-            tauAdp_inital=200,
-            tauM=20,
-            tauM_inital_std=5,
+            tau_adp_inital_std=50,
+            tau_adp_inital=200,
+            tau_m=20,
+            tau_m_inital_std=5,
             device=device,
             bias=is_bias,
         )
-        self.dense_2 = readout_integrator(
-            n, 12, tauM=10, tauM_inital_std=1, device=device, bias=is_bias
+        self.dense_2 = sd.ReadoutIntegrator(
+            n, 12, tau_m=10, tau_m_inital_std=1, device=device, bias=is_bias
         )
-        # self.dense_2 = spike_rnn(n,12,tauM=10,tauM_inital_std=1,device=device,bias=is_bias)#10
+        # self.dense_2 = sr.spike_rnn(n,12,tauM=10,tauM_inital_std=1,device=device,bias=is_bias)#10
 
         self.thr = nn.Parameter(torch.Tensor(1))
         nn.init.constant_(self.thr, 5e-2)
@@ -374,7 +380,6 @@ def train(epochs, criterion, optimizer, scheduler=None):
 
 
 learning_rate = 3e-3  # 1.2e-2
-
 
 test_acc = test(test_dataloader)
 print(test_acc)

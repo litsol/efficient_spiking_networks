@@ -1,3 +1,9 @@
+2023-02-17  Michael Guravage  <michael@odysseus>
+
+	* pyproject.toml (dependencies):
+	Added "librosa>=0.9.2", "matplotlib>=3.7.0", "torchvision>=0.14.1"
+	dependencies to get srnn_fin.py running.
+
 2023-02-08  Michael Guravage  <michael@odysseus>
 
 	* .pre-commit-config.yaml (repos): Update isort to version
