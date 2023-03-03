@@ -42,10 +42,7 @@ def multi_normal_initilization(
             + np.random.normal(means[i], stds[i], size=num_per_group).tolist()
         )
 
-        # By definition range(len(means)) runs from 0 to (len(means)-1).
-        # This if will never be true.
-
-        if i == len(means):
+        if i == len(means) - 1:
             a = (  # pylint: disable=C0103
                 a
                 + np.random.normal(
@@ -67,7 +64,7 @@ class SpikeDENSE(nn.Module):
         output_dim,
         tau_m=20,
         tau_adp_inital=200,
-        tau_initializer="normal",
+        tau_initializer="normal",  # pylint: disable=W0613
         tau_m_inital_std=5,
         tau_adp_inital_std=5,
         is_adaptive=1,
@@ -173,7 +170,7 @@ class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
         output_dim,
         tau_m=20,
         tau_adp_inital=100,
-        tau_initializer="normal",
+        tau_initializer="normal",  # pylint: disable=W0613
         tau_m_inital_std=5,
         tau_adp_inital_std=5,
         is_adaptive=1,
@@ -249,7 +246,7 @@ class ReadoutIntegrator(nn.Module):
         input_dim,
         output_dim,
         tau_m=20,
-        tau_initializer="normal",
+        tau_initializer="normal",  # pylint: disable=W0613
         tau_m_inital_std=5,
         device="cpu",
         bias=True,
@@ -269,9 +266,7 @@ class ReadoutIntegrator(nn.Module):
         self.dense = nn.Linear(input_dim, output_dim, bias=bias)
         self.tau_m = nn.Parameter(torch.Tensor(self.output_dim))
 
-        # Why use an if statement if there is only one path?
-        if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
+        nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
 
     def parameters(self):
         """parameters member function docstring"""

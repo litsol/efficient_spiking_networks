@@ -63,7 +63,6 @@ def mem_update_adp(  # pylint: disable=R0913
     isAdapt=1,  # pylint: disable=C0103
     device=None,
 ):  # pylint: disable=C0103
-
     """Update the membrane potential.
 
     Called in the forward member function of the SpikeDENSE,
@@ -147,6 +146,7 @@ class ActFunADP(torch.autograd.Function):
         (result,) = ctx.saved_tensors
         # grad_input = grad_output.clone()
         # temp = abs(result) < lens
+        temp = torch.tensor()
         if SURROGRATE_TYPE == "G":
             # temp = gaussian(result, mu=0.0, sigma=LENS)
             temp = (

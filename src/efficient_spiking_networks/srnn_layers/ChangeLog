@@ -1,3 +1,21 @@
+2023-03-03  Michael  <michael@ajax>
+
+	* spike_dense.py (multi_normal_initilization): By definition
+	range(len(means)) runs from 0 to (len(means)-1). The if statement
+	will never be true. Subtract 1:
+	if i == len(means):  -> if i == len(means) - 1:
+
+	(ReadoutIntegrator.__init__): The tau_initializer is always
+	"normal", so drop the if statement.
+
+	* spike_cnn.py (SpikeCov1D.__init__): Ditto
+
+	(SpikeCov2D.__init__): Ditto
+
+	* spike_neuron.py (ActFunADP.backward): Since temp is assigned
+	within the if-statement, if all the branches fail temp is
+	undefined. I initialized it to an empty tensor.
+
 2022-11-16  Michael Guravage  <michael@odysseus>
 
 	* spike_neuron.py (mem_update_adp): Removed unnecessary noqa:E501 exception from line 64.

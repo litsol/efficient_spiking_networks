@@ -30,7 +30,7 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
         dilation=1,
         tau_m=20,
         tau_adp_inital=100,
-        tau_initializer="normal",
+        tau_initializer="normal",  # pylint: disable=W0613
         tau_m_inital_std=5,
         tau_adp_inital_std=5,
         is_adaptive=1,
@@ -77,12 +77,8 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
         self.tau_m = nn.Parameter(torch.Tensor(self.output_size))
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_size))
 
-        # if tau_initializer other than 'normal' this block is not
-        # executed and self.tau_m and self.tau_adp are not
-        # initialized.
-        if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
-            nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
+        nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
+        nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
 
     def parameters(self):
         """parameters member function docstring"""
@@ -151,7 +147,7 @@ class SpikeCov2D(nn.Module):  # pylint: disable=R0902
         pool_strides=2,
         tau_m=20,
         tau_adp_inital=100,
-        tau_initializer="normal",
+        tau_initializer="normal",  # pylint: disable=W0613
         tau_m_inital_std=5,
         tau_adp_inital_std=5,
         is_adaptive=1,
@@ -191,9 +187,8 @@ class SpikeCov2D(nn.Module):  # pylint: disable=R0902
         self.tau_m = nn.Parameter(torch.Tensor(self.output_size))
         self.tau_adp = nn.Parameter(torch.Tensor(self.output_size))
 
-        if tau_initializer == "normal":
-            nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
-            nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
+        nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
+        nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
 
     def parameters(self):
         """parameters member function docstring"""

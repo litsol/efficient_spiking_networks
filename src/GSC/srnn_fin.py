@@ -8,7 +8,16 @@
 # type: ignore
 # REUSE-IgnoreStart
 import os
+import pprint
 import sys
+
+import snoop
+from loguru import logger
+
+pp = pprint.PrettyPrinter(indent=4, width=41, compact=True)
+
+logger.remove()
+logger.add(sys.stderr, level="INFO")
 
 sys.path.append("..")
 import time
@@ -39,6 +48,7 @@ dtype = torch.float
 torch.manual_seed(0)
 # device = torch.device("cpu")
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+logger.info(f"{device=}")
 
 # Directories
 train_data_root = "/export/scratch2/guravage/GSD"
@@ -61,8 +71,9 @@ training_words = [
     if os.path.isdir(os.path.join(train_data_root, x))
     if x[0] != "_"
 ]
-print("{} training words:".format(len(training_words)))
-print(training_words)
+logger.info(
+    f"traiing words[{len(training_words)}]:\n{pp.pformat(training_words)}]"
+)
 
 # ls directories and folders in test_data_root folder
 testing_words = os.listdir(test_data_root)
@@ -79,8 +90,9 @@ testing_words = [
     if os.path.isdir(os.path.join(train_data_root, x))
     if x[0] != "_"
 ]
-print("{} testing words:".format(len(testing_words)))
-print(testing_words)
+logger.info(
+    f"testing words[{len(testing_words)}]:\n{pp.pformat(testing_words)}]"
+)
 
 # Create a dictionary whose keys are testing_words(in the
 # train_data_root) and whose values are the words' ordianal position in the original list.
@@ -92,8 +104,7 @@ for w in training_words:
     if label is None:
         label_dct[w] = label_dct["_unknown_"]
 
-print("label_dct:")
-print(label_dct)
+logger.info(f"label_dct[{len(label_dct)}]:\n{pp.pformat(label_dct)}]")
 
 sr = 16000
 size = 16000
@@ -104,8 +115,9 @@ for f in os.listdir(noise_path):
     if f.endswith(".wav"):
         full_name = os.path.join(noise_path, f)
         noise_files.append(full_name)
-print("noise files:")
-print(noise_files)
+
+logger.info(f"noise_files[{len(noise_files)}]:\n{pp.pformat(noise_files)}]")
+
 
 # generate silence training and validation data
 
@@ -146,7 +158,6 @@ transform = torchvision.transforms.Compose([pad, melspec, rescale])
 
 
 def collate_fn(data):
-
     X_batch = np.array([d[0] for d in data])
     std = X_batch.std(axis=(0, 2), keepdims=True)
     X_batch = torch.tensor(X_batch / std)
@@ -272,7 +283,6 @@ class RNN_spike(nn.Module):
             - thr_func(-self.thr - input) * 1.0
         )
         for i in range(seq_length):
-
             input_x = input_s[:, :, i, :].reshape(b, channel * input_dim)
             mem_layer1, spike_layer1 = self.dense_1.forward(input_x)
             mem_layer2, spike_layer2 = self.rnn_1.forward(spike_layer1)
@@ -296,8 +306,10 @@ class RNN_spike(nn.Module):
 model = RNN_spike()
 criterion = nn.CrossEntropyLoss()  # nn.NLLLoss()
 
-# device = torch.device("cpu")#torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("device:", device)
+# device = torch.device("cpu")
+# torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# logger.info(f"device: {device}")
+
 model.to(device)
 
 
@@ -319,7 +331,8 @@ def test(data_loader, is_show=0):
         sum_sample += predicted.numel()
     mean_FR = np.mean(fr_, axis=0)
     if is_show:
-        print("Mean FR: ", mean_FR)
+        logger.info(f"Mean FR: {mean_FR}")
+
     return test_acc.data.cpu().numpy() / sum_sample, mean_FR
 
 
@@ -343,7 +356,7 @@ def train(epochs, criterion, optimizer, scheduler=None):
             _, predicted = torch.max(predictions.data, 1)
             train_loss = criterion(predictions, labels)
 
-            # print(predictions,predicted)
+            logger.debug(f"{predictions=}\n{predicted=}")
 
             train_loss.backward()
             train_loss_sum += train_loss.item()
@@ -362,27 +375,26 @@ def train(epochs, criterion, optimizer, scheduler=None):
         train_loss_sum += train_loss
 
         acc_list.append(train_acc)
-        print("lr: ", optimizer.param_groups[0]["lr"])
+        logger.info(f"{optimizer.param_groups[0]['lr']=}")
+
         if valid_acc > best_acc and train_acc > 0.890:
             best_acc = valid_acc
             torch.save(model, path + str(best_acc)[:7] + "-srnn-v3.pth")
-        print(model.thr)
-        print(
-            "epoch: {:3d}, Train Loss: {:.4f}, Train Acc: {:.4f},Valid Acc: {:.4f}".format(
-                epoch,
-                train_loss_sum / len(train_dataloader),
-                train_acc,
-                valid_acc,
-            ),
-            flush=True,
+        logger.info("f{model.thr=}")
+
+        training_loss = train_loss_sum / len(train_dataloader)
+        logger.info(
+            f"{epoch=:.3d},\n{training_loss=:.4f},\n{train_acc=:.4f},\n{valid_acc=:.4f}"
         )
+
     return acc_list
 
 
 learning_rate = 3e-3  # 1.2e-2
 
 test_acc = test(test_dataloader)
-print(test_acc)
+logger.info(f"{test_acc=}")
+
 if is_bias:
     base_params = [
         model.dense_1.dense.weight,
@@ -437,5 +449,8 @@ epochs = 30
 acc_list = train(epochs, criterion, optimizer, scheduler)
 
 test_acc = test(test_dataloader)
-print(test_acc)
+logger.info(f"{test_acc=}")
+
 # REUSE-IgnoreEnd
+
+# finis

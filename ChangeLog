@@ -1,3 +1,27 @@
+2023-03-03  Michael  <michael@ajax>
+
+	* pyproject.toml (tool.black): Enumerating an explicit list of filed to exclude did not work.
+	exclude = '''
+	/(
+	   src/GSC/data.py
+	 | src/GSC/optim.py
+	 | src/srnn_fin.py
+	 | utils.py
+	)/
+	'''
+	force-exclude = 'src/GSC/*' worked on a directory basis, but I want finer grained controll.
+
+	I moved the exclusion list from pyproject.toml to .pre-commit-config.yaml.
+
+	* .pre-commit-config.yaml (black):
+
+	Back's exclusion list won't exclude individual files. The solution
+	seems to be to exclude some files on running black using pre-commit:
+	https://stackoverflow.com/questions/61032281/exclude-some-files-on-running-black-using-pre-commit
+
+	Since I want to enumerate several files, I rely on pre-commit regular expression syntax:
+	https://pre-commit.com/#regular-expressions
+
 2023-02-17  Michael Guravage  <michael@odysseus>
 
 	* pyproject.toml (dependencies):
