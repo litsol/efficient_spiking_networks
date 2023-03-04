@@ -16,8 +16,8 @@ from loguru import logger
 
 pp = pprint.PrettyPrinter(indent=4, width=41, compact=True)
 
-logger.remove()
-logger.add(sys.stderr, level="INFO")
+# logger.remove()
+# logger.add(sys.stderr, level="INFO")
 
 sys.path.append("..")
 import time
@@ -78,7 +78,8 @@ logger.info(
 # ls directories and folders in test_data_root folder
 testing_words = os.listdir(test_data_root)
 
-# Look for testing_word directories in train_data_root
+# Look for testing_word directories in train_data_root so that we only
+# select test data for selected training classes.
 testing_words = [
     x for x in testing_words if os.path.isdir(os.path.join(train_data_root, x))
 ]
@@ -138,6 +139,7 @@ if not os.path.exists(silence_folder):
             "_silence_/" + fname + "\n" for fname in silence_files[:260]
         )
 
+# Turn wav files into Melspectrograms
 
 n_fft = int(30e-3 * sr)
 hop_length = int(10e-3 * sr)
@@ -156,6 +158,8 @@ normalize = Normalize()
 
 transform = torchvision.transforms.Compose([pad, melspec, rescale])
 
+# Please comment this code
+
 
 def collate_fn(data):
     X_batch = np.array([d[0] for d in data])
@@ -167,6 +171,8 @@ def collate_fn(data):
 
 
 batch_size = 32
+
+# Collect the training, testing and validation data
 
 train_dataset = SpeechCommandsDataset(
     train_data_root,
@@ -220,6 +226,7 @@ thr_func = sn.ActFunADP.apply
 is_bias = True
 
 
+# Define the overall RNN network
 class RNN_spike(nn.Module):
     def __init__(
         self,
@@ -227,6 +234,8 @@ class RNN_spike(nn.Module):
         super(RNN_spike, self).__init__()
         n = 256
         # is_bias=False
+
+        # Here is what the network looks like
         self.dense_1 = sd.SpikeDENSE(
             40 * 3,
             n,
@@ -252,9 +261,11 @@ class RNN_spike(nn.Module):
         )
         # self.dense_2 = sr.spike_rnn(n,12,tauM=10,tauM_inital_std=1,device=device,bias=is_bias)#10
 
+        # Please comment this code
         self.thr = nn.Parameter(torch.Tensor(1))
         nn.init.constant_(self.thr, 5e-2)
 
+        # Initialize the network layers
         torch.nn.init.kaiming_normal_(self.rnn_1.recurrent.weight)
 
         torch.nn.init.xavier_normal_(self.dense_1.dense.weight)
@@ -267,6 +278,8 @@ class RNN_spike(nn.Module):
 
     def forward(self, input):
         # What is this that returns 4 values?
+        # What is b?
+        # Stereo channels?
         b, channel, seq_length, input_dim = input.shape
         self.dense_1.set_neuron_state(b)
         self.dense_2.set_neuron_state(b)
@@ -278,10 +291,13 @@ class RNN_spike(nn.Module):
         output = 0
 
         # input_s = input
+        # Why multiply by 1?
         input_s = (
             thr_func(input - self.thr) * 1.0
             - thr_func(-self.thr - input) * 1.0
         )
+
+        # For every timestep update the membrane potential
         for i in range(seq_length):
             input_x = input_s[:, :, i, :].reshape(b, channel * input_dim)
             mem_layer1, spike_layer1 = self.dense_1.forward(input_x)
@@ -289,6 +305,7 @@ class RNN_spike(nn.Module):
             # mem_layer3,spike_layer3 = self.dense_2.forward(spike_layer2)
             mem_layer3 = self.dense_2.forward(spike_layer2)
 
+            # #tracking #spikes (firing rate)
             output += mem_layer3
             fr_1.append(spike_layer1.detach().cpu().numpy().mean())
             fr_2.append(spike_layer2.detach().cpu().numpy().mean())
@@ -354,6 +371,9 @@ def train(epochs, criterion, optimizer, scheduler=None):
 
             predictions, _ = model(images)
             _, predicted = torch.max(predictions.data, 1)
+
+            logger.debug(f"predictions:\n{pp.pformat(predictions)}]")
+            logger.debug(f"labels:\n{pp.pformat(labels)}]")
             train_loss = criterion(predictions, labels)
 
             logger.debug(f"{predictions=}\n{predicted=}")

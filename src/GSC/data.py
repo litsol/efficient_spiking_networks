@@ -39,6 +39,7 @@ class SpeechCommandsDataset(Dataset):
             validation_list = txt2list(
                 os.path.join(data_root, "validation_list.txt")
             )
+            # silence_validation_list.txt not in gsc dataset
             validation_list += txt2list(
                 os.path.join(data_root, "silence_validation_list.txt")
             )
@@ -60,9 +61,10 @@ class SpeechCommandsDataset(Dataset):
                 label = label_dct.get(command)
                 if label is None:
                     print("ignored command: %s" % command)
-                    break
+                    break  # Out of here!
                 partial_path = "/".join([command, filename])
 
+                # These are Boolean values!
                 testing_file = partial_path in testing_list
                 validation_file = partial_path in validation_list
                 training_file = not testing_file and not validation_file
