@@ -16,6 +16,7 @@ import math
 
 # import numpy as np
 import torch
+from loguru import logger
 
 # from torch import nn
 from torch.nn import functional as F
@@ -32,6 +33,10 @@ SCALE: float = 6.0
 HIGHT: float = 0.15
 
 # act_fun_adp = ActFunADP.apply
+
+
+class NoSurrogateTypeException(Exception):
+    pass
 
 
 def gaussian(
@@ -146,7 +151,6 @@ class ActFunADP(torch.autograd.Function):
         (result,) = ctx.saved_tensors
         # grad_input = grad_output.clone()
         # temp = abs(result) < lens
-        temp = torch.tensor()
         if SURROGRATE_TYPE == "G":
             # temp = gaussian(result, mu=0.0, sigma=LENS)
             temp = (
@@ -164,6 +168,11 @@ class ActFunADP(torch.autograd.Function):
             temp = F.relu(1 - result.abs())
         elif SURROGRATE_TYPE == "slayer":
             temp = torch.exp(-5 * result.abs())
+        else:
+            logger.critical(
+                "No Surrogate type chosen, so temp tensor is undefined."
+            )
+            raise NoSurrogateTypeException("No Surrogate type chosen.")
         return grad_output * temp.float() * GAMMA
 
 

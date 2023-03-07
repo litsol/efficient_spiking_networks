@@ -1,3 +1,9 @@
+2023-03-07  Michael  <michael@ajax>
+
+	* spike_neuron.py (ActFunADP.backward): In the absence of a
+	default surrogate type, print a critical log message and throw an
+	exception.
+
 2023-03-03  Michael  <michael@ajax>
 
 	* spike_dense.py (multi_normal_initilization): By definition

@@ -16,8 +16,8 @@ from loguru import logger
 
 pp = pprint.PrettyPrinter(indent=4, width=41, compact=True)
 
-# logger.remove()
-# logger.add(sys.stderr, level="INFO")
+logger.remove()
+logger.add(sys.stderr, level="INFO")
 
 sys.path.append("..")
 import time
@@ -50,9 +50,11 @@ torch.manual_seed(0)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 logger.info(f"{device=}")
 
+NUMBER_OF_WORKERS = 4 if device.type == "cpu" else 8
+
 # Directories
-train_data_root = "/export/scratch2/guravage/GSD"
-test_data_root = "/export/scratch2/guravage/GSD"
+train_data_root = "/export/scratch2/guravage/DATA/Desktop/learn_from_true_label/gsc_v1_data/train"
+test_data_root = "/export/scratch2/guravage/DATA/Desktop/learn_from_true_label/gsc_v1_data/test"
 
 # ls directories and folders in train_data_root folder
 training_words = os.listdir(train_data_root)
@@ -187,7 +189,7 @@ train_sampler = torch.utils.data.WeightedRandomSampler(
 train_dataloader = DataLoader(
     train_dataset,
     batch_size=batch_size,
-    num_workers=8,
+    num_workers=NUMBER_OF_WORKERS,
     sampler=train_sampler,
     collate_fn=collate_fn,
 )
@@ -203,7 +205,7 @@ valid_dataloader = DataLoader(
     valid_dataset,
     batch_size=batch_size,
     shuffle=True,
-    num_workers=8,
+    num_workers=NUMBER_OF_WORKERS,
     collate_fn=collate_fn,
 )
 
@@ -214,7 +216,7 @@ test_dataloader = DataLoader(
     test_dataset,
     batch_size=batch_size,
     shuffle=True,
-    num_workers=8,
+    num_workers=NUMBER_OF_WORKERS,
     collate_fn=collate_fn,
 )
 
@@ -404,7 +406,7 @@ def train(epochs, criterion, optimizer, scheduler=None):
 
         training_loss = train_loss_sum / len(train_dataloader)
         logger.info(
-            f"{epoch=:.3d},\n{training_loss=:.4f},\n{train_acc=:.4f},\n{valid_acc=:.4f}"
+            f"{epoch=:}, {training_loss=}, {train_acc=:.4f}, {valid_acc=:.4f}"
         )
 
     return acc_list
@@ -467,6 +469,9 @@ epochs = 30
 # scheduler = LambdaLR(optimizer,lr_lambda=lambda epoch: 1-epoch/70)
 # scheduler = ExponentialLR(optimizer, gamma=0.85)
 acc_list = train(epochs, criterion, optimizer, scheduler)
+logger.info(f"{acc_list=}")
+
+logger.info("TRAINING COMPLETE")
 
 test_acc = test(test_dataloader)
 logger.info(f"{test_acc=}")
