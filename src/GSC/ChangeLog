@@ -3,6 +3,16 @@
 	* srnn_fin.py: Make the number of processes the Dataloader will
 	spawn dependent on whether we're running on a CPU or GPU.
 
+	Removed unused libraries:
+	import time
+	import librosa
+	import matplotlib.pyplot as plt
+	import scipy.io.wavfile as wav
+	from matplotlib.gridspec import GridSpec
+	from optim import RAdam
+	from torch.optim.lr_scheduler import ExponentialLR, LambdaLR, MultiStepLR
+
+
 2023-02-17  Michael Guravage  <michael@odysseus>
 
 	* srnn_fin.py: Many small changes to get it running - almost.
