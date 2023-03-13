@@ -16,6 +16,7 @@ import sys
 import numpy as np
 
 # import snoop
+# import deeplake
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -111,11 +112,14 @@ logger.info(
 label_dct = {
     k: i for i, k in enumerate(testing_words + ["_silence_", "_unknown_"])
 }
+
+# Look for training directories in testing directories.
 for w in training_words:
     label = label_dct.get(w)
     if label is None:
         label_dct[w] = label_dct["_unknown_"]
 
+# Dictionary of testing words plus training words not in testing words.
 logger.info(pp.pformat(f"{len(label_dct)=}, {label_dct=}"))
 
 SR = 16000
@@ -235,6 +239,12 @@ test_dataloader = DataLoader(
     collate_fn=collate_fn,
 )
 
+#  breakpoint()
+
+# train_ds = deeplake.load("hub://activeloop/speech-commands-train")
+# train_dataloader = train_ds.pytorch(num_workers=0, batch_size=32, shuffle=True)  # noqa:E501 pylint: disable=C0301
+# test_ds = deeplake.load("hub://activeloop/speech-commands-test")
+# test_dataloader = test_ds.pytorch(num_workers=0, batch_size=32, shuffle=True)
 
 thr_func = sn.ActFunADP.apply
 IS_BIAS = True
