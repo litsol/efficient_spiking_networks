@@ -11,8 +11,8 @@ from expecter import expect
 
 import efficient_spiking_networks.srnn_layers.spike_neuron as sn
 from efficient_spiking_networks import __version__
-from efficient_spiking_networks.utilities.decorators import initializer
-from efficient_spiking_networks.utilities.exceptions import InvalidContextError
+from utilities.decorators import initializer
+from utilities.exceptions import InvalidContextError
 
 TARGET = torch.Tensor([0.1080, 0.1080, 0.1080, 0.1080, 0.1080])
 

@@ -14,9 +14,6 @@ import pprint
 import sys
 
 import numpy as np
-
-# import snoop
-# import deeplake
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -28,230 +25,68 @@ from torch.utils.data import DataLoader
 import efficient_spiking_networks.srnn_layers.spike_dense as sd
 import efficient_spiking_networks.srnn_layers.spike_neuron as sn
 import efficient_spiking_networks.srnn_layers.spike_rnn as sr
-from GSC.data import (  # pylint: disable=C0301
-    MelSpectrogram,
-    Normalize,
-    Pad,
-    Rescale,
-    SpeechCommandsDataset,
-)
+from GSC.data import Pad  # pylint: disable=C0301
+from GSC.data import MelSpectrogram, Normalize, Rescale, SpeechCommandsDataset
 from GSC.utils import generate_random_silence_files
 
+# import snoop
+# import deeplake
+# from tqdm import tqdm_notebo
+
+# Setup pretty printing
 pp = pprint.PrettyPrinter(indent=4, width=41, compact=True)
 
+# Setup logger level
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
 sys.path.append("..")
 
-# from tqdm import tqdm_notebook
-
-dtype = torch.float  # pylint: disable=E1101
-torch.manual_seed(0)
 # device = torch.device("cpu")
 device = torch.device(  # pylint: disable=E1101
     "cuda:0" if torch.cuda.is_available() else "cpu"
 )
 logger.info(f"{device=}")
 
+
+# Setup number of workers dependent upon where the code is run
 NUMBER_OF_WORKERS = 4 if device.type == "cpu" else 8
 logger.info(f"The Dataloader will spawn {NUMBER_OF_WORKERS} worker processes.")
 
-# Directories
+# Data Directories
 TRAIN_DATA_ROOT = "./DATA/train"
 TEST_DATA_ROOT = "./DATA/test"
 
-# ls directories and folders in TRAIN_DATA_ROOT folder
-training_words = os.listdir(TRAIN_DATA_ROOT)
+# Specify the learning rate
+LEARNING_RATE = 3e-3  # 1.2e-2
 
-# Isolate directories in the train_date_root
-training_words = [
-    x
-    for x in training_words  # pylint: disable=C0103
-    if os.path.isdir(os.path.join(TRAIN_DATA_ROOT, x))
-]
+EPOCHS = 1
 
-# Ignore those that begin with an underscore
-training_words = [
-    x
-    for x in training_words  # pylint: disable=C0103
-    if os.path.isdir(os.path.join(TRAIN_DATA_ROOT, x))
-    if x[0] != "_"
-]
-logger.info(
-    f"traiing words[{len(training_words)}]:\n{pp.pformat(training_words)}]"
-)
-
-# ls directories and folders in TEST_DATA_ROOT folder
-testing_words = os.listdir(TEST_DATA_ROOT)
-
-# Look for testing_word directories in TRAIN_DATA_ROOT so that we only
-# select test data for selected training classes.
-testing_words = [
-    x
-    for x in testing_words  # pylint: disable=C0103
-    if os.path.isdir(os.path.join(TRAIN_DATA_ROOT, x))
-]
-
-# Ignore those that begin with an underscore
-testing_words = [
-    x
-    for x in testing_words  # pylint: disable=C0103
-    if os.path.isdir(os.path.join(TRAIN_DATA_ROOT, x))
-    if x[0] != "_"
-]
-logger.info(
-    f"testing words[{len(testing_words)}]:\n{pp.pformat(testing_words)}]"
-)
-
-# Create a dictionary whose keys are
-# testing_words(in the TRAIN_DATA_ROOT)
-# and whose values are the words' ordianal
-# position in the original list.
-
-label_dct = {
-    k: i for i, k in enumerate(testing_words + ["_silence_", "_unknown_"])
-}
-
-# Look for training directories in testing directories.
-for w in training_words:
-    label = label_dct.get(w)
-    if label is None:
-        label_dct[w] = label_dct["_unknown_"]
-
-# Dictionary of testing words plus training words not in testing words.
-logger.info(pp.pformat(f"{len(label_dct)=}, {label_dct=}"))
-
-SR = 16000
+BATCH_SIZE = 32
 SIZE = 16000
+SR = 16000  # Sampling Rate 16Hz ?
 
-noise_path = os.path.join(TRAIN_DATA_ROOT, "_background_noise_")
-noise_files = []
-for f in os.listdir(noise_path):
-    if f.endswith(".wav"):
-        full_name = os.path.join(noise_path, f)
-        noise_files.append(full_name)
-
-logger.info(f"noise_files[{len(noise_files)}]:\n{pp.pformat(noise_files)}]")
-
-
-# generate silence training and validation data
-
-silence_folder = os.path.join(TRAIN_DATA_ROOT, "_silence_")
-if not os.path.exists(silence_folder):
-    os.makedirs(silence_folder)
-    # 260 validation / 2300 training
-    generate_random_silence_files(
-        2560, noise_files, SIZE, os.path.join(silence_folder, "rd_silence")
-    )
-
-    # save 260 files for validation
-    silence_files = list(os.listdir(silence_folder))
-    silence_lines = [
-        "_silence_/" + fname + "\n" for fname in silence_files[:260]
-    ]
-    silence_filename = os.path.join(
-        TRAIN_DATA_ROOT, "silence_validation_list.txt"
-    )
-    with open(silence_filename, "a", encoding="utf-8") as fp:
-        fp.writelines(silence_lines)
-
-# Turn wav files into Melspectrograms
-
-N_FFT = int(30e-3 * SR)
-HOP_LENGTH = int(10e-3 * SR)
-N_MELS = 40
+DELTA_ORDER = 2
 FMAX = 4000
 FMIN = 20
-DELTA_ORDER = 2
+HOP_LENGTH = int(10e-3 * SR)
+N_FFT = int(30e-3 * SR)
+N_MELS = 40
 STACK = True
 
+# Turn wav files into Melspectrograms
 melspec = MelSpectrogram(
     SR, N_FFT, HOP_LENGTH, N_MELS, FMIN, FMAX, DELTA_ORDER, stack=STACK
 )
+
 pad = Pad(SIZE)
 rescale = Rescale()
 normalize = Normalize()
-
 transform = torchvision.transforms.Compose([pad, melspec, rescale])
-
-# Please comment this code
-
-
-def collate_fn(data):
-    """
-    Collate function docscting
-    """
-
-    x_batch = np.array([d[0] for d in data])  # pylint: disable=C0103
-    std = x_batch.std(axis=(0, 2), keepdims=True)
-    x_batch = torch.tensor(x_batch / std)  # pylint: disable=E1101
-    y_batch = torch.tensor([d[1] for d in data])  # pylint: disable=C0103,E1101
-
-    return x_batch, y_batch
-
-
-BATCH_SIZE = 32
-
-# Collect the training, testing and validation data
-
-train_dataset = SpeechCommandsDataset(
-    TRAIN_DATA_ROOT,
-    label_dct,
-    transform=transform,
-    mode="train",
-    max_nb_per_class=None,
-)
-train_sampler = torch.utils.data.WeightedRandomSampler(
-    train_dataset.weights, len(train_dataset.weights)
-)
-train_dataloader = DataLoader(
-    train_dataset,
-    batch_size=BATCH_SIZE,
-    num_workers=NUMBER_OF_WORKERS,
-    sampler=train_sampler,
-    collate_fn=collate_fn,
-)
-
-valid_dataset = SpeechCommandsDataset(
-    TRAIN_DATA_ROOT,
-    label_dct,
-    transform=transform,
-    mode="valid",
-    max_nb_per_class=None,
-)
-valid_dataloader = DataLoader(
-    valid_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=True,
-    num_workers=NUMBER_OF_WORKERS,
-    collate_fn=collate_fn,
-)
-
-test_dataset = SpeechCommandsDataset(
-    TEST_DATA_ROOT, label_dct, transform=transform, mode="test"
-)
-test_dataloader = DataLoader(
-    test_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=True,
-    num_workers=NUMBER_OF_WORKERS,
-    collate_fn=collate_fn,
-)
-
-#  breakpoint()
-
-# train_ds = deeplake.load("hub://activeloop/speech-commands-train")
-# train_dataloader = train_ds.pytorch(num_workers=0, batch_size=32, shuffle=True)  # noqa:E501 pylint: disable=C0301
-# test_ds = deeplake.load("hub://activeloop/speech-commands-test")
-# test_dataloader = test_ds.pytorch(num_workers=0, batch_size=32, shuffle=True)
-
-thr_func = sn.ActFunADP.apply
-IS_BIAS = True
 
 
 # Define the overall RNN network
-class RecurrentSpikingNetwork(nn.Module):
+class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
 
     """
     Class docstring
@@ -373,15 +208,18 @@ class RecurrentSpikingNetwork(nn.Module):
         ]
 
 
-# Instantiate the model
-model = RecurrentSpikingNetwork()
-criterion_f = nn.CrossEntropyLoss()  # nn.NLLLoss()
+# Please comment this code
+def collate_fn(data):
+    """
+    Collate function docscting
+    """
 
-# device = torch.device("cpu")
-# torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# logger.info(f"device: {device}")
+    x_batch = np.array([d[0] for d in data])  # pylint: disable=C0103
+    std = x_batch.std(axis=(0, 2), keepdims=True)
+    x_batch = torch.tensor(x_batch / std)  # pylint: disable=E1101
+    y_batch = torch.tensor([d[1] for d in data])  # pylint: disable=C0103,E1101
 
-model.to(device)
+    return x_batch, y_batch
 
 
 def test(data_loader, is_show=0):
@@ -477,7 +315,179 @@ def train(
     return acc_list
 
 
-LEARNING_RATE = 3e-3  # 1.2e-2
+# Definitions complete - let's get going!
+
+# list the directories and folders in TRAIN_DATA_ROOT folder
+training_words = os.listdir(TRAIN_DATA_ROOT)
+
+# Isolate the directories in the train_date_root
+training_words = [
+    x
+    for x in training_words  # pylint: disable=C0103
+    if os.path.isdir(os.path.join(TRAIN_DATA_ROOT, x))
+]
+
+# Ignore those that begin with an underscore
+training_words = [
+    x
+    for x in training_words  # pylint: disable=C0103
+    if os.path.isdir(os.path.join(TRAIN_DATA_ROOT, x))
+    if x[0] != "_"
+]
+logger.info(
+    f"traiing words[{len(training_words)}]:\n{pp.pformat(training_words)}]"
+)
+
+# list the directories and folders in TEST_DATA_ROOT folder
+testing_words = os.listdir(TEST_DATA_ROOT)
+
+# Look for testing_word directories in TRAIN_DATA_ROOT so that we only
+# select test data for selected training classes.
+testing_words = [
+    x
+    for x in testing_words  # pylint: disable=C0103
+    if os.path.isdir(os.path.join(TRAIN_DATA_ROOT, x))
+]
+
+# Ignore those that begin with an underscore
+testing_words = [
+    x
+    for x in testing_words  # pylint: disable=C0103
+    if os.path.isdir(os.path.join(TRAIN_DATA_ROOT, x))
+    if x[0] != "_"
+]
+logger.info(
+    f"testing words[{len(testing_words)}]:\n{pp.pformat(testing_words)}]"
+)
+
+# Create a dictionary whose keys are
+# testing_words(in the TRAIN_DATA_ROOT)
+# and whose values are the words' ordianal
+# position in the original list.
+
+label_dct = {
+    k: i for i, k in enumerate(testing_words + ["_silence_", "_unknown_"])
+}
+
+# Look for training directories in testing directories.
+for w in training_words:
+    label = label_dct.get(w)
+    if label is None:
+        label_dct[w] = label_dct["_unknown_"]
+
+# Dictionary of testing words plus training words not in testing words.
+logger.info(pp.pformat(f"{len(label_dct)=}, {label_dct=}"))
+
+noise_path = os.path.join(TRAIN_DATA_ROOT, "_background_noise_")
+noise_files = []
+for f in os.listdir(noise_path):
+    if f.endswith(".wav"):
+        full_name = os.path.join(noise_path, f)
+        noise_files.append(full_name)
+
+logger.info(f"noise_files[{len(noise_files)}]:\n{pp.pformat(noise_files)}]")
+
+
+# generate silence training and validation data
+
+silence_folder = os.path.join(TRAIN_DATA_ROOT, "_silence_")
+if not os.path.exists(silence_folder):
+    os.makedirs(silence_folder)
+    # 260 validation / 2300 training
+    generate_random_silence_files(
+        2560, noise_files, SIZE, os.path.join(silence_folder, "rd_silence")
+    )
+
+    # save 260 files for validation
+    silence_files = list(os.listdir(silence_folder))
+    silence_lines = [
+        "_silence_/" + fname + "\n" for fname in silence_files[:260]
+    ]
+    silence_filename = os.path.join(
+        TRAIN_DATA_ROOT, "silence_validation_list.txt"
+    )
+    with open(silence_filename, "a", encoding="utf-8") as fp:
+        fp.writelines(silence_lines)
+
+
+# Collect the training, testing and validation data
+
+train_dataset = SpeechCommandsDataset(
+    TRAIN_DATA_ROOT,
+    label_dct,
+    transform=transform,
+    mode="train",
+    max_nb_per_class=None,
+)
+
+item, label = train_dataset[0]
+logger.info(f"Shape of train item: {item.shape}")
+logger.info(f"Label of train item: {label}")
+
+train_sampler = torch.utils.data.WeightedRandomSampler(
+    train_dataset.weights, len(train_dataset.weights)
+)
+
+train_dataloader = DataLoader(
+    train_dataset,
+    batch_size=BATCH_SIZE,
+    num_workers=NUMBER_OF_WORKERS,
+    sampler=train_sampler,
+    collate_fn=collate_fn,
+)
+
+train_features, train_labels = next(iter(train_dataloader))
+logger.info(f"Train Feature batch shape: {train_features.size()}")
+logger.info(f"Train Labels batch shape: {train_labels.size()}")
+logger.info(f"Train labels:\n{pp.pformat(train_labels)}]")
+
+valid_dataset = SpeechCommandsDataset(
+    TRAIN_DATA_ROOT,
+    label_dct,
+    transform=transform,
+    mode="valid",
+    max_nb_per_class=None,
+)
+
+valid_dataloader = DataLoader(
+    valid_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    num_workers=NUMBER_OF_WORKERS,
+    collate_fn=collate_fn,
+)
+
+test_dataset = SpeechCommandsDataset(
+    TEST_DATA_ROOT, label_dct, transform=transform, mode="test"
+)
+
+item, label = test_dataset[0]
+logger.info(f"Shape of test item: {item.shape}")
+logger.info(f"Label of test item: {label}")
+
+test_dataloader = DataLoader(
+    test_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    num_workers=NUMBER_OF_WORKERS,
+    collate_fn=collate_fn,
+)
+
+test_features, test_labels = next(iter(test_dataloader))
+logger.info(f"Test Feature batch shape: {test_features.size()}")
+logger.info(f"Test Labels batch shape: {test_labels.size()}")
+logger.info(f"Test labels:\n{pp.pformat(test_labels)}]")
+
+# Specify the function that will apply the forward and backward passes
+thr_func = sn.ActFunADP.apply
+IS_BIAS = True
+
+# Instantiate the model
+model = RecurrentSpikingNetwork()
+criterion_f = nn.CrossEntropyLoss()  # nn.NLLLoss()
+
+model.to(device)
+
 
 test_acc_before_training = test(test_dataloader)
 logger.info(f"{test_acc_before_training=}")
@@ -503,20 +513,6 @@ else:
         model.dense_2.dense.weight,
     ]
 
-# optimizer_f = torch.optim.Adamax(
-#     [
-#         {"params": base_params},
-#         {"params": model.dense_1.tau_m, "lr": LEARNING_RATE * 2},
-#         {"params": model.dense_2.tau_m, "lr": LEARNING_RATE * 2},
-#         {"params": model.rnn_1.tau_m, "lr": LEARNING_RATE * 2},
-#         {"params": model.dense_1.tau_adp, "lr": LEARNING_RATE * 2},
-#         #   {"params": model.dense_2.tau_adp, "lr": LEARNING_RATE * 10},
-#         {"params": model.rnn_1.tau_adp, "lr": LEARNING_RATE * 2},
-#     ],
-#     lr=LEARNING_RATE,eps=1e-5
-# )
-
-
 optimizer_f = torch.optim.Adam(
     [
         {"params": base_params, "lr": LEARNING_RATE},
@@ -525,7 +521,7 @@ optimizer_f = torch.optim.Adam(
         {"params": model.dense_2.tau_m, "lr": LEARNING_RATE * 2},
         {"params": model.rnn_1.tau_m, "lr": LEARNING_RATE * 2},
         {"params": model.dense_1.tau_adp, "lr": LEARNING_RATE * 2.0},
-        #   {'params': model.dense_2.tau_adp, 'lr': LEARNING_RATE * 10},
+        #   {'}params': model.dense_2.tau_adp, 'lr': LEARNING_RATE * 10},
         {"params": model.rnn_1.tau_adp, "lr": LEARNING_RATE * 2.0},
     ],
     lr=LEARNING_RATE,
@@ -536,8 +532,6 @@ scheduler_f = StepLR(optimizer_f, step_size=10, gamma=0.1)  # 20
 # scheduler_f = LambdaLR(optimizer_f,lr_lambda=lambda epoch: 1-epoch/70)
 # scheduler_f = ExponentialLR(optimizer_f, gamma=0.85)
 
-EPOCHS = 30
-
 train_acc_training_complete = train(
     EPOCHS, criterion_f, optimizer_f, scheduler_f
 )
@@ -547,6 +541,8 @@ logger.info("TRAINING COMPLETE")
 
 test_acc_after_training = test(test_dataloader)
 logger.info(f"{test_acc_after_training}")
+
+logger.info("TESTING COMPLETE")
 
 # finis
 
