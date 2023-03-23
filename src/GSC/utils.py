@@ -66,6 +66,11 @@ def plot_mem_rec(mem, idx):
         ax.plot(dat[i])
 
 
+# The following two functions together generated random noise by
+# randomly sampling a portion of sound from a randomly chozen
+# background noise file. Unvortulately four of the six background
+# noise files yield errors when read.
+
 def get_random_noise(noise_files, size):
 
     noise_idx = np.random.choice(len(noise_files))
@@ -85,6 +90,15 @@ def generate_random_silence_files(
 
         silence_wav = get_random_noise(noise_files, size)
         wav.write(prefix + "_" + str(i) + ".wav", sr, silence_wav)
+
+
+def generate_noise_files(nb_files, noise_file, output_folder, file_prefix, sr):
+    for i in range(nb_files):
+        fs, noise_wav = wav.read(noise_file)
+        offset = np.random.randint(len(noise_wav) - sr)
+        noise_wav = noise_wav[offset : offset + sr].astype(float)
+        fn = output_folder / ''.join([file_prefix, f'{i}', '.wav'])
+        wav.write(fn, sr, noise_wav)
 
 
 def split_wav(waveform, frame_size, split_hop_length):
