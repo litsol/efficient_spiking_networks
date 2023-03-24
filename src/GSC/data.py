@@ -7,12 +7,68 @@
 # REUSE-IgnoreStart
 import os
 
+from pathlib import Path
 import librosa
 import numpy as np
 import scipy.io.wavfile as wav
 import torch
 from torch.utils.data import Dataset
 from utils import split_wav, txt2list
+from typing import Optional, Tuple, Union
+from torchaudio.datasets import SPEECHCOMMANDS
+from torchaudio.datasets.utils import _load_waveform
+
+class GSC_SSubsetSC(SPEECHCOMMANDS):
+    def __init__(
+            self,
+            root: Union[str, Path],
+            url: str = "speech_commands_v0.02",
+            folder_in_archive: str = "SpeechCommands",
+            download: bool = True,
+            subset: Optional[str] = None,
+            transform: Optional[str] = None, ) -> None:
+
+        super().__init__(
+            root,
+            url=url,
+            folder_in_archive="SpeechCommands",
+            download=True )
+
+        self.transform = transform
+
+        def load_list(filename):
+            filepath = os.path.join(self._path, filename)
+            with open(filepath) as fileobj:
+                return [
+                    os.path.normpath(os.path.join(self._path, line.strip()))
+                    for line in fileobj
+                ]
+
+        if subset == "validation":
+            self._walker = load_list("validation_list.txt")+ load_list(
+                "silence_validation_list.txt"
+            )
+        elif subset == "testing":
+            self._walker = load_list("testing_list.txt")
+        elif subset == "training":
+            excludes = load_list("testing_list.txt") + load_list("validation_list.txt") + load_list("silence_validation_list.txt")
+            excludes = set(excludes)
+            self._walker = [w for w in self._walker if w not in excludes]
+
+    def __getitem__(self, n):
+        metadata = self.get_metadata(n)
+        waveform = _load_waveform(self._archive, metadata[0], metadata[1])
+        m = torch.max(torch.abs(waveform))
+
+        if m > 0:
+            waveform /= m
+        if self.transform is not None:
+            waveform = self.transform(waveform.squeeze())
+            # waveform = torch.from_numpy(waveform)
+        # return waveform, metadata[2] 
+        return (waveform,) + metadata[1:] 
+        # return item, label
+
 
 
 class SpeechCommandsDataset(Dataset):
@@ -276,3 +332,6 @@ class WhiteNoise:
 
 
 # REUSE-IgnoreEnd
+# Local Variables:
+# compile-command: "pyflakes data.py; pylint-3 -d E0401 -f parseable data.py" # NOQA, pylint: disable=C0301
+# End:

@@ -1,3 +1,17 @@
+2023-03-24  Michael Guravage  <guravage@arda.itf.cwi.nl>
+
+	* data.py (GSC_SSubsetSC): Added GSC_SSubsetSC class here so we
+	can reference it elsewhere.
+	(GSC_SSubsetSC.__init__): Correctly separate validation, testing
+	and training datasets. NB: when you instantiate this class,
+	self._walker already contains all the wav files.
+
+	* pta.py (GSC_SSubsetSC.__init__): transform is a tuple composing
+	several individual transformations; no need to wrap it in a tuple
+	here.
+	(GSC_SSubsetSC.__getitem__): transform is not a tuple so we can
+	call it directly.
+
 2023-03-07  Michael  <michael@ajax>
 
 	* srnn_fin.py: Make the number of processes the Dataloader will

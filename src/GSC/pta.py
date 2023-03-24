@@ -108,7 +108,7 @@ class GSC_SSubsetSC(SPEECHCOMMANDS):
             folder_in_archive="SpeechCommands",
             download=True,
         )
-        self.transform = (transform,)
+        self.transform = transform
 
         def load_list(filename):
             filepath = os.path.join(self._path, filename)
@@ -140,9 +140,8 @@ class GSC_SSubsetSC(SPEECHCOMMANDS):
             waveform /= m
 
         if self.transform is not None:
-            waveform = self.transform[0](waveform.squeeze())
+            waveform = self.transform(waveform.squeeze())
             # waveform = torch.from_numpy(waveform)
-
         return (waveform,) + metadata[1:]
         # return item, label
 
