@@ -1,5 +1,7 @@
 2023-03-24  Michael Guravage  <guravage@arda.itf.cwi.nl>
 
+	* fuse.py: Forgot to specify the LEARNING_RATE.
+
 	* data.py (GSC_SSubsetSC): Added GSC_SSubsetSC class here so we
 	can reference it elsewhere.
 	(GSC_SSubsetSC.__init__): Correctly separate validation, testing

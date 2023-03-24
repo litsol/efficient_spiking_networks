@@ -50,6 +50,7 @@ logger.add(sys.stderr, level="INFO")
 device = torch.device(  # pylint: disable=E1101
     "cuda:0" if torch.cuda.is_available() else "cpu"
 )
+
 # Setup number of workers dependent upon where the code is run
 NUMBER_OF_WORKERS = 4 if device.type == "cpu" else 8
 PIN_MEMORY = device.type == "cuda"
@@ -65,6 +66,10 @@ GSC = DATAROOT / "SpeechCommands" / GSC_URL
 BATCH_SIZE = 32
 SIZE = 16000
 SR = 16000  # Sampling Rate 16Hz ?
+
+# Specify the learning rate
+LEARNING_RATE = 3e-3  # 1.2e-2
+EPOCHS = 1
 
 DELTA_ORDER = 2
 FMAX = 4000
@@ -349,7 +354,6 @@ gsc_training_dataset = GSC_SSubsetSC(
     subset="training",
     transform=TRANSFORMS,
 )
-# waveform, label = gsc_train_dataset[0]
 (
     waveform,
     sample_rate,
@@ -360,7 +364,7 @@ gsc_training_dataset = GSC_SSubsetSC(
 logger.info(f"Shape of gsc_training_set waveform: {waveform.shape}")
 logger.info(f"Wavefore label: {label}")
 labels = sorted(list(set(datapoint[2] for datapoint in gsc_training_dataset)))
-logger.debug(f"training labels:\n{pp.pformat(labels)}]")
+logger.info(f"training labels:\n{pp.pformat(labels)}]")
 
 gsc_training_dataloader = torch.utils.data.DataLoader(
     gsc_training_dataset,
@@ -373,8 +377,9 @@ gsc_training_dataloader = torch.utils.data.DataLoader(
 )
 gsc_features, gsc_labels = next(iter(gsc_training_dataloader))
 logger.info(f"Training Feature batch shape: {gsc_features.size()}")
-logger.info(f"Training Labels batch shape: {gsc_labels.size()}")
-# logger.info(f"Training Labels batch shape: {len(gsc_labels)}")
+logger.info(
+    f"Training Labels batch shape: {gsc_labels.size()}"
+)  # {len(gsc_labels)}
 logger.info(f"Training labels, i.e. indices:\n{pp.pformat(gsc_labels)}]")
 logger.info(f"Training labels[{len(gsc_labels)}]:\n{pp.pformat(gsc_labels)}")
 
@@ -386,7 +391,6 @@ gsc_testing_dataset = GSC_SSubsetSC(
     subset="testing",
     transform=TRANSFORMS,
 )
-# waveform, label = gsc_testing_dataset[0]
 (
     waveform,
     sample_rate,
@@ -397,8 +401,7 @@ gsc_testing_dataset = GSC_SSubsetSC(
 logger.info(f"Shape of gsc_testing_set waveform: {waveform.shape}")
 logger.info(f"Wavefore label: {label}")
 labels = sorted(list(set(datapoint[2] for datapoint in gsc_testing_dataset)))
-logger.debug(f"testing labels:\n{pp.pformat(labels)}]")
-
+logger.info(f"testing labels:\n{pp.pformat(labels)}]")
 
 gsc_testing_dataloader = torch.utils.data.DataLoader(
     gsc_testing_dataset,
@@ -411,8 +414,9 @@ gsc_testing_dataloader = torch.utils.data.DataLoader(
 )
 gsc_features, gsc_labels = next(iter(gsc_testing_dataloader))
 logger.info(f"Testing Feature batch shape: {gsc_features.size()}")
-logger.info(f"Testing Labels batch shape: {gsc_labels.size()}")
-# logger.info(f"Testing Labels batch shape: {len(gsc_labels)}")
+logger.info(
+    f"Testing Labels batch shape: {gsc_labels.size()}"
+)  # {len(gsc_labels)}
 logger.info(f"Testing labels, i.e. indices:\n{pp.pformat(gsc_labels)}]")
 logger.info(f"testing labels[{len(gsc_labels)}]:\n{pp.pformat(gsc_labels)}")
 
@@ -424,7 +428,6 @@ gsc_validating_dataset = GSC_SSubsetSC(
     subset="validation",
     transform=TRANSFORMS,
 )
-# waveform, label = gsc_validating_dataset[0]
 (
     waveform,
     sample_rate,
@@ -434,11 +437,10 @@ gsc_validating_dataset = GSC_SSubsetSC(
 ) = gsc_validating_dataset[0]
 logger.info(f"Shape of gsc_validating_dataset waveform: {waveform.shape}")
 logger.info(f"Wavefore label: {label}")
-
 labels = sorted(
     list(set(datapoint[2] for datapoint in gsc_validating_dataset))
 )
-logger.debug(f"validating labels:\n{pp.pformat(labels)}]")
+logger.info(f"validating labels:\n{pp.pformat(labels)}]")
 
 gsc_validating_dataloader = torch.utils.data.DataLoader(
     gsc_validating_dataset,
@@ -451,8 +453,9 @@ gsc_validating_dataloader = torch.utils.data.DataLoader(
 )
 gsc_features, gsc_labels = next(iter(gsc_validating_dataloader))
 logger.info(f"Validating Feature batch shape: {gsc_features.size()}")
-logger.info(f"Validating Labels batch shape: {gsc_labels.size()}")
-# logger.info(f"Validating Labels batch shape: {len(gsc_labels)}")
+logger.info(
+    f"Validating Labels batch shape: {gsc_labels.size()}"
+)  # {len(gsc_labels)}
 logger.info(f"Validating labels, i.e. indices:\n{pp.pformat(gsc_labels)}]")
 logger.info(f"Validating labels[{len(gsc_labels)}]:\n{pp.pformat(gsc_labels)}")
 
