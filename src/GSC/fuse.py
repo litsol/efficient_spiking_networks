@@ -362,7 +362,7 @@ gsc_training_dataset = GSC_SSubsetSC(
     utterance_number,
 ) = gsc_training_dataset[0]
 logger.info(f"Shape of gsc_training_set waveform: {waveform.shape}")
-logger.info(f"Wavefore label: {label}")
+logger.info(f"Waveform label: {label}")
 labels = sorted(list(set(datapoint[2] for datapoint in gsc_training_dataset)))
 logger.info(f"training labels:\n{pp.pformat(labels)}]")
 
@@ -399,7 +399,7 @@ gsc_testing_dataset = GSC_SSubsetSC(
     utterance_number,
 ) = gsc_testing_dataset[0]
 logger.info(f"Shape of gsc_testing_set waveform: {waveform.shape}")
-logger.info(f"Wavefore label: {label}")
+logger.info(f"Waveform label: {label}")
 labels = sorted(list(set(datapoint[2] for datapoint in gsc_testing_dataset)))
 logger.info(f"testing labels:\n{pp.pformat(labels)}]")
 
@@ -436,7 +436,7 @@ gsc_validating_dataset = GSC_SSubsetSC(
     utterance_number,
 ) = gsc_validating_dataset[0]
 logger.info(f"Shape of gsc_validating_dataset waveform: {waveform.shape}")
-logger.info(f"Wavefore label: {label}")
+logger.info(f"Waveform label: {label}")
 labels = sorted(
     list(set(datapoint[2] for datapoint in gsc_validating_dataset))
 )
