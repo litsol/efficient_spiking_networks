@@ -21,6 +21,7 @@ import torch.optim as optim
 import torchaudio
 import torchvision
 from loguru import logger
+from torch.optim.lr_scheduler import StepLR
 from torchaudio.datasets import SPEECHCOMMANDS
 from torchaudio.datasets.utils import _load_waveform
 
@@ -46,13 +47,13 @@ pp = pprint.PrettyPrinter(indent=4, compact=True, width=42)
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
-# device = torch.device("cpu")
 device = torch.device(  # pylint: disable=E1101
     "cuda:0" if torch.cuda.is_available() else "cpu"
 )
+device = torch.device("cpu")
 
 # Setup number of workers dependent upon where the code is run
-NUMBER_OF_WORKERS = 4 if device.type == "cpu" else 8
+NUMBER_OF_WORKERS = 0 if device.type == "cpu" else 8
 PIN_MEMORY = device.type == "cuda"
 
 logger.info(f"{device=}")
@@ -283,7 +284,7 @@ def test(data_loader, is_show=0):
 
 
 def train(
-    epochs, criterion, optimizer, scheduler=None
+    data_loader, epochs, criterion, optimizer, scheduler=None
 ):  # pylint: disable=R0914
     """
     train function docstring
@@ -296,7 +297,7 @@ def train(
         train_acc = 0
         sum_sample = 0
         train_loss_sum = 0
-        for _, (images, labels) in enumerate(train_dataloader):
+        for _, (images, labels) in enumerate(data_loader):
             # if i ==0:
             images = images.view(-1, 3, 101, 40).to(device)
 
@@ -327,7 +328,7 @@ def train(
         if scheduler:
             scheduler.step()
         train_acc = train_acc.data.cpu().numpy() / sum_sample
-        valid_acc, _ = test(test_dataloader, 1)
+        valid_acc, _ = test(gsc_testing_dataloader, 1)  # what?!
         train_loss_sum += train_loss
 
         acc_list.append(train_acc)
@@ -338,7 +339,7 @@ def train(
             torch.save(model, path + str(best_acc)[:7] + "-srnn-v3.pth")
         logger.info(f"{model.thr=}")
 
-        training_loss = train_loss_sum / len(train_dataloader)
+        training_loss = train_loss_sum / len(data_loader)
         logger.info(
             f"{epoch=:}, {training_loss=}, {train_acc=:.4f}, {valid_acc=:.4f}"
         )
@@ -515,7 +516,7 @@ scheduler_f = StepLR(optimizer_f, step_size=10, gamma=0.1)  # 20
 # scheduler_f = ExponentialLR(optimizer_f, gamma=0.85)
 
 train_acc_training_complete = train(
-    EPOCHS, criterion_f, optimizer_f, scheduler_f
+    gsc_training_dataloader, EPOCHS, criterion_f, optimizer_f, scheduler_f
 )
 logger.info(f"{train_acc_training_complete=}")
 
