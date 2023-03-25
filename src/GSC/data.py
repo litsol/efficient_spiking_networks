@@ -6,17 +6,18 @@
 # type: ignore
 # REUSE-IgnoreStart
 import os
-
 from pathlib import Path
+from typing import Optional, Tuple, Union
+
 import librosa
 import numpy as np
 import scipy.io.wavfile as wav
 import torch
 from torch.utils.data import Dataset
-from utils import split_wav, txt2list
-from typing import Optional, Tuple, Union
 from torchaudio.datasets import SPEECHCOMMANDS
 from torchaudio.datasets.utils import _load_waveform
+from utils import split_wav, txt2list
+
 
 class GSC_SSubsetSC(SPEECHCOMMANDS):
     def __init__(
@@ -26,7 +27,9 @@ class GSC_SSubsetSC(SPEECHCOMMANDS):
             folder_in_archive: str = "SpeechCommands",
             download: bool = True,
             subset: Optional[str] = None,
-            transform: Optional[str] = None, ) -> None:
+            transform: Optional[str] = None,
+            class_dict: dict = list(),
+    ) -> None:
 
         super().__init__(
             root,
@@ -35,6 +38,7 @@ class GSC_SSubsetSC(SPEECHCOMMANDS):
             download=True )
 
         self.transform = transform
+        self.class_dict = class_dict
 
         def load_list(filename):
             filepath = os.path.join(self._path, filename)
@@ -45,13 +49,11 @@ class GSC_SSubsetSC(SPEECHCOMMANDS):
                 ]
 
         if subset == "validation":
-            self._walker = load_list("validation_list.txt")+ load_list(
-                "silence_validation_list.txt"
-            )
+            self._walker = load_list("validation_list.txt")  # + load_list("silence_validation_list.txt")
         elif subset == "testing":
             self._walker = load_list("testing_list.txt")
         elif subset == "training":
-            excludes = load_list("testing_list.txt") + load_list("validation_list.txt") + load_list("silence_validation_list.txt")
+            excludes = load_list("testing_list.txt") + load_list("validation_list.txt")  # + load_list("silence_validation_list.txt")
             excludes = set(excludes)
             self._walker = [w for w in self._walker if w not in excludes]
 
@@ -64,11 +66,7 @@ class GSC_SSubsetSC(SPEECHCOMMANDS):
             waveform /= m
         if self.transform is not None:
             waveform = self.transform(waveform.squeeze())
-            # waveform = torch.from_numpy(waveform)
-        # return waveform, metadata[2] 
-        return (waveform,) + metadata[1:] 
-        # return item, label
-
+        return waveform, self.class_dict[metadata[2]]  # (waveform,) + metadata[1:]
 
 
 class SpeechCommandsDataset(Dataset):

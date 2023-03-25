@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import snoop
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -39,6 +40,7 @@ from GSC.data import (
 
 # from GSC.utils import generate_random_silence_files
 from GSC.utils import generate_noise_files
+from utilities.gendfind import gen_dfind
 from utilities.genfind import gen_find
 
 # Setup pretty printing
@@ -47,13 +49,13 @@ pp = pprint.PrettyPrinter(indent=4, compact=True, width=42)
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
+device = torch.device("cpu")
 device = torch.device(  # pylint: disable=E1101
     "cuda:0" if torch.cuda.is_available() else "cpu"
 )
-device = torch.device("cpu")
 
 # Setup number of workers dependent upon where the code is run
-NUMBER_OF_WORKERS = 0 if device.type == "cpu" else 8
+NUMBER_OF_WORKERS = 4 if device.type == "cpu" else 8
 PIN_MEMORY = device.type == "cuda"
 
 logger.info(f"{device=}")
@@ -116,6 +118,27 @@ silence_files = [*gen_find("*.wav", silence_folder)]
 with open(GSC / "silence_validation_list.txt", "w") as f:
     for filename in silence_files[:260]:
         f.write(f"{filename}\n")
+
+# Create Class Label Dictionary
+class_labels = [Path(p).parts[-1] for p in gen_dfind(r"^(?!_).*", GSC)]
+CLASS_DICT = dict(
+    {j: i for i, j in enumerate(class_labels[:11])},
+    **{"unknown": 11},
+    **{j: 11 for _, j in enumerate(class_labels[11:])},
+)
+
+logger.info(f"{CLASS_DICT=}")
+
+
+def label_to_index(word):
+    # Return the position of the word in labels
+    return CLASS_DICT[word]
+
+
+def index_to_label(index):
+    # Return the word corresponding to the index in labels
+    # This is the inverse of label_to_index
+    return list(CLASS_DICT.keys())[list(CLASS_DICT.values()).index(index)]
 
 
 # Define the overall RNN network
@@ -298,7 +321,7 @@ def train(
         sum_sample = 0
         train_loss_sum = 0
         for _, (images, labels) in enumerate(data_loader):
-            # if i ==0:
+            # if i == 0:
             images = images.view(-1, 3, 101, 40).to(device)
 
             labels = labels.view((-1)).long().to(device)
@@ -311,6 +334,7 @@ def train(
 
             logger.debug(f"predictions:\n{pp.pformat(predictions)}]")
             logger.debug(f"labels:\n{pp.pformat(labels)}]")
+
             train_loss = criterion(predictions, labels)
 
             logger.debug(f"{predictions=}\n{predicted=}")
@@ -354,18 +378,14 @@ gsc_training_dataset = GSC_SSubsetSC(
     download=True,
     subset="training",
     transform=TRANSFORMS,
+    class_dict=CLASS_DICT,
 )
-(
-    waveform,
-    sample_rate,
-    label,
-    speaker_id,
-    utterance_number,
-) = gsc_training_dataset[0]
+
+waveform, index = gsc_training_dataset[0]
 logger.info(f"Shape of gsc_training_set waveform: {waveform.shape}")
-logger.info(f"Waveform label: {label}")
-labels = sorted(list(set(datapoint[2] for datapoint in gsc_training_dataset)))
-logger.info(f"training labels:\n{pp.pformat(labels)}]")
+logger.info(f"Waveform label: {index_to_label(index)}")
+# labels = sorted(list(set(index_to_label(datapoint[1]) for datapoint in gsc_training_dataset)))
+# logger.info(f"training labels:\n{pp.pformat(labels)}]")
 
 gsc_training_dataloader = torch.utils.data.DataLoader(
     gsc_training_dataset,
@@ -376,13 +396,12 @@ gsc_training_dataloader = torch.utils.data.DataLoader(
     num_workers=NUMBER_OF_WORKERS,
     pin_memory=PIN_MEMORY,
 )
+
 gsc_features, gsc_labels = next(iter(gsc_training_dataloader))
 logger.info(f"Training Feature batch shape: {gsc_features.size()}")
-logger.info(
-    f"Training Labels batch shape: {gsc_labels.size()}"
-)  # {len(gsc_labels)}
+logger.info(f"Training Labels batch shape: {gsc_labels.size()}")
 logger.info(f"Training labels, i.e. indices:\n{pp.pformat(gsc_labels)}]")
-logger.info(f"Training labels[{len(gsc_labels)}]:\n{pp.pformat(gsc_labels)}")
+# logger.info(f"Training labels[{len(gsc_labels)}]:\n{pp.pformat(gsc_labels)}")
 
 gsc_testing_dataset = GSC_SSubsetSC(
     root=DATAROOT,
@@ -391,18 +410,8 @@ gsc_testing_dataset = GSC_SSubsetSC(
     download=True,
     subset="testing",
     transform=TRANSFORMS,
+    class_dict=CLASS_DICT,
 )
-(
-    waveform,
-    sample_rate,
-    label,
-    speaker_id,
-    utterance_number,
-) = gsc_testing_dataset[0]
-logger.info(f"Shape of gsc_testing_set waveform: {waveform.shape}")
-logger.info(f"Waveform label: {label}")
-labels = sorted(list(set(datapoint[2] for datapoint in gsc_testing_dataset)))
-logger.info(f"testing labels:\n{pp.pformat(labels)}]")
 
 gsc_testing_dataloader = torch.utils.data.DataLoader(
     gsc_testing_dataset,
@@ -413,53 +422,6 @@ gsc_testing_dataloader = torch.utils.data.DataLoader(
     num_workers=NUMBER_OF_WORKERS,
     pin_memory=PIN_MEMORY,
 )
-gsc_features, gsc_labels = next(iter(gsc_testing_dataloader))
-logger.info(f"Testing Feature batch shape: {gsc_features.size()}")
-logger.info(
-    f"Testing Labels batch shape: {gsc_labels.size()}"
-)  # {len(gsc_labels)}
-logger.info(f"Testing labels, i.e. indices:\n{pp.pformat(gsc_labels)}]")
-logger.info(f"testing labels[{len(gsc_labels)}]:\n{pp.pformat(gsc_labels)}")
-
-gsc_validating_dataset = GSC_SSubsetSC(
-    root=DATAROOT,
-    url=GSC_URL,
-    folder_in_archive="SpeechCommands",
-    download=True,
-    subset="validation",
-    transform=TRANSFORMS,
-)
-(
-    waveform,
-    sample_rate,
-    label,
-    speaker_id,
-    utterance_number,
-) = gsc_validating_dataset[0]
-logger.info(f"Shape of gsc_validating_dataset waveform: {waveform.shape}")
-logger.info(f"Waveform label: {label}")
-labels = sorted(
-    list(set(datapoint[2] for datapoint in gsc_validating_dataset))
-)
-logger.info(f"validating labels:\n{pp.pformat(labels)}]")
-
-gsc_validating_dataloader = torch.utils.data.DataLoader(
-    gsc_validating_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=False,
-    drop_last=False,
-    collate_fn=collate_fn,
-    num_workers=NUMBER_OF_WORKERS,
-    pin_memory=PIN_MEMORY,
-)
-gsc_features, gsc_labels = next(iter(gsc_validating_dataloader))
-logger.info(f"Validating Feature batch shape: {gsc_features.size()}")
-logger.info(
-    f"Validating Labels batch shape: {gsc_labels.size()}"
-)  # {len(gsc_labels)}
-logger.info(f"Validating labels, i.e. indices:\n{pp.pformat(gsc_labels)}]")
-logger.info(f"Validating labels[{len(gsc_labels)}]:\n{pp.pformat(gsc_labels)}")
-
 
 # Specify the function that will apply the forward and backward passes
 thr_func = sn.ActFunADP.apply
@@ -467,6 +429,7 @@ IS_BIAS = True
 
 # Instantiate the model
 model = RecurrentSpikingNetwork()
+
 criterion_f = nn.CrossEntropyLoss()  # nn.NLLLoss()
 
 model.to(device)
