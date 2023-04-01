@@ -1,20 +1,20 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
 #
 # SPDX-License-Identifier: MPL-2.0
-# flake8: noqa
-# pylint: skip-file
-# type: ignore
-# REUSE-IgnoreStart
+
+"""PyTorch implementation of Rectified Adam from
+https://github.com/LiyuanLucasLiu/RAdam"""
+
 import math
 
 import torch
-from torch.optim.optimizer import Optimizer, required
-
-# PyTorch implementation of Rectified Adam from https://github.com/LiyuanLucasLiu/RAdam
+from torch.optim.optimizer import Optimizer
 
 
 class RAdam(Optimizer):
-    def __init__(
+    """Class Docstring"""
+
+    def __init__(  # pylint: disable=R0913
         self,
         params,
         lr=1e-3,
@@ -23,19 +23,14 @@ class RAdam(Optimizer):
         weight_decay=0,
         degenerated_to_sgd=True,
     ):
-        if not 0.0 <= lr:
-            raise ValueError("Invalid learning rate: {}".format(lr))
-        if not 0.0 <= eps:
-            raise ValueError("Invalid epsilon value: {}".format(eps))
+        if 0.0 > lr:
+            raise ValueError(f"Invalid learning rate: {lr}")
+        if 0.0 > eps:
+            raise ValueError(f"Invalid epsilon value: {eps}")
         if not 0.0 <= betas[0] < 1.0:
-            raise ValueError(
-                "Invalid beta parameter at index 0: {}".format(betas[0])
-            )
+            raise ValueError(f"Invalid beta parameter at index 0: {betas[0]}")
         if not 0.0 <= betas[1] < 1.0:
-            raise ValueError(
-                "Invalid beta parameter at index 1: {}".format(betas[1])
-            )
-
+            raise ValueError(f"Invalid beta parameter at index 1: {betas[1]}")
         self.degenerated_to_sgd = degenerated_to_sgd
         if (
             isinstance(params, (list, tuple))
@@ -48,27 +43,29 @@ class RAdam(Optimizer):
                     or param["betas"][1] != betas[1]
                 ):
                     param["buffer"] = [[None, None, None] for _ in range(10)]
-        defaults = dict(
-            lr=lr,
-            betas=betas,
-            eps=eps,
-            weight_decay=weight_decay,
-            buffer=[[None, None, None] for _ in range(10)],
-        )
-        super(RAdam, self).__init__(params, defaults)
 
-    def __setstate__(self, state):
-        super(RAdam, self).__setstate__(state)
+        defaults = {
+            "lr": lr,
+            "betas": betas,
+            "eps": eps,
+            "weight_decay": weight_decay,
+            "buffer": [[None, None, None] for _ in range(10)],
+        }
 
-    def step(self, closure=None):
+        super().__init__(params, defaults)
 
+    # def __setstate__(self, state):
+    #     """Function Docstring"""
+    #     super().__setstate__(state)
+
+    def step(self, closure=None):  # pylint: disable=R0912, R0914
+        """Function Docstring"""
         loss = None
         if closure is not None:
             loss = closure()
 
         for group in self.param_groups:
-
-            for p in group["params"]:
+            for p in group["params"]:  # pylint: disable=C0103
                 if p.grad is None:
                     continue
                 grad = p.grad.data.float()
@@ -83,8 +80,16 @@ class RAdam(Optimizer):
 
                 if len(state) == 0:
                     state["step"] = 0
-                    state["exp_avg"] = torch.zeros_like(p_data_fp32)
-                    state["exp_avg_sq"] = torch.zeros_like(p_data_fp32)
+                    state[
+                        "exp_avg"
+                    ] = torch.zeros_like(  # pylint: disable=E1101
+                        p_data_fp32
+                    )
+                    state[
+                        "exp_avg_sq"
+                    ] = torch.zeros_like(  # pylint: disable=E1101
+                        p_data_fp32
+                    )
                 else:
                     state["exp_avg"] = state["exp_avg"].type_as(p_data_fp32)
                     state["exp_avg_sq"] = state["exp_avg_sq"].type_as(
@@ -100,14 +105,17 @@ class RAdam(Optimizer):
                 state["step"] += 1
                 buffered = group["buffer"][int(state["step"] % 10)]
                 if state["step"] == buffered[0]:
-                    N_sma, step_size = buffered[1], buffered[2]
+                    N_sma, step_size = (  # pylint: disable=C0103
+                        buffered[1],
+                        buffered[2],
+                    )
                 else:
                     buffered[0] = state["step"]
                     beta2_t = beta2 ** state["step"]
-                    N_sma_max = 2 / (1 - beta2) - 1
-                    N_sma = N_sma_max - 2 * state["step"] * beta2_t / (
-                        1 - beta2_t
-                    )
+                    N_sma_max = 2 / (1 - beta2) - 1  # pylint: disable=C0103
+                    N_sma = N_sma_max - 2 * state[  # pylint: disable=C0103
+                        "step"
+                    ] * beta2_t / (1 - beta2_t)
                     buffered[1] = N_sma
 
                     # more conservative since it's an approximated value
@@ -149,4 +157,7 @@ class RAdam(Optimizer):
         return loss
 
 
-# REUSE-IgnoreEnd
+# finis
+# Local Variables:
+# compile-command: "pyflakes optim.py; pylint-3 -f parseable optim.py" # NOQA, pylint: disable=C0301
+# End:

@@ -1,3 +1,8 @@
+2023-03-29  Michael  <michael@literatesolutions.com>
+
+	* decorators.py (debug, timeit): Added two new decorators. NB they
+	use the @decorator decorator
+
 2022-11-10  Michael  <michael@literatesolutions.com>
 
 	* decorators.py (initializer.wrapper): Fixed bug: Iterate over

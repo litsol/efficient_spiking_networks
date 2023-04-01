@@ -4,12 +4,38 @@
 
 """ Custom function decorators """
 
-__all__ = ["initializer"]
+__all__ = ["debug", "timeit", "initializer"]
 
 import inspect
+from datetime import datetime
 from functools import wraps
 
+from decorator import decorator
+from loguru import logger
+
 from .exceptions import InvalidContextError
+
+
+@decorator
+def debug(_func, *args, **kwargs):
+    """Print the function signature and return value"""
+    args_repr = [repr(arg) for arg in args]  # 1
+    kwargs_repr = [f"{key}={val!r}" for key, val in kwargs.items()]  # 2
+    signature = ", ".join(args_repr + kwargs_repr)  # 3
+    logger.info(f"Calling {_func.__name__}({signature})")
+    value = _func(*args, **kwargs)
+    logger.info(f"{_func.__name__!r} returned {value!r}")  # 4
+    return value
+
+
+@decorator
+def timeit(_func, *args, **kwargs):
+    """Log the elasped time it took this function to run."""
+    time_0 = datetime.now()
+    rtn = _func(*args, **kwargs)
+    time_1 = datetime.now()
+    logger.info(f"This task took: {time_1 - time_0}")
+    return rtn
 
 
 def initializer(fun):

@@ -122,8 +122,10 @@ valid-metaclass-classmethod-first-arg=cls
 
 
 [EXCEPTIONS]
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception
+# overgeneral-exceptions=BaseException,
+#                        Exception
 
 
 [TYPECHECK]
