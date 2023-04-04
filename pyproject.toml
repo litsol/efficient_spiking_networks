@@ -21,6 +21,7 @@ dependencies = [
     "torchaudio>=0.13.1",
     "types-decorator>=5.1.8.3",
     "decorator>=5.1.1",
+    "typer>=0.7.0",
 ]
 requires-python = ">=3.10"
 classifiers = [

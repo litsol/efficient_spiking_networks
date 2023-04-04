@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
+# SPDX-License-Identifier: CC0-1.0
+
+[data]
+    dataroot = "google"
+    gsc_url = "speech_commands_v0.01"
+
+[srnn]
+    learning_rate = 3e-3
+    epochs = 30
+    batch_size = 32
+    size = 16000
+    sample_rate = 16000
+    bias = true
+
+[mel]
+    delta_order = 2
+    fmax = 4000
+    fmin = 20
+    n_mels = 40
+    stack = true
+
+[logger]
+    level = "INFO"
+
+[cuda]
+    cuda = true
+
+# finis
