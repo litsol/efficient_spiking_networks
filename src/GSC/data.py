@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
 
-""" Module Docstring """
+"""
+Classes that retrieve and manipualte input data.
+"""
 
 import os
 from pathlib import Path
@@ -19,7 +20,10 @@ from utils import txt2list
 
 
 class GSCSSubsetSC(SPEECHCOMMANDS):
-    """Class Docstring"""
+    """
+    Our custom SPEECHCOMMANDS/dataset class that retrieves,
+    segregates and transforms the GSC dataset.
+    """
 
     def __init__(  # pylint: disable=R0913
         self,
@@ -65,7 +69,12 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
             self._walker = [w for w in self._walker if w not in excludes]  # noqa: E501 pylint: disable=C0103
 
     def __getitem__(self, n):
-        """Function Docstring"""
+        """This iterator return a tuple consisting of a waveform and
+        its numeric label provided by the classification
+        dictionary.
+
+        Here is where the pad, melspec, and rescale traansforms are applied.
+        """
 
         metadata = self.get_metadata(n)
         waveform = _load_waveform(self._archive, metadata[0], metadata[1])
@@ -191,14 +200,21 @@ class SpeechCommandsDataset(Dataset):
 
 
 class Pad:  # pylint: disable=R0903
-    """Class Docstring"""
+    """ Pad class """
 
-    def __init__(self, size):
-        """Function Docstring"""
+    def __init__(self, size: int):
+        """
+        Class constructor; size comes from the configuration file.
+        """
         self.size = size
 
     def __call__(self, waveform):
-        """Function Docstring"""
+        """
+        Pad the waveform on the beginning and on the end such that the
+        resulting array is the same length as the size the pad object
+        was instantiated with.
+        """
+
         wav_size = waveform.shape[0]
         pad_size = (self.size - wav_size) // 2
         padded_wav = np.pad(
@@ -258,7 +274,9 @@ class Pad:  # pylint: disable=R0903
 
 
 class MelSpectrogram:  # pylint: disable=R0902,R0903
-    """Class Docstring"""
+    """
+    Mel Spectrogram Transformation
+    """
 
     def __init__(  # pylint: disable=R0913
         self,
@@ -271,7 +289,10 @@ class MelSpectrogram:  # pylint: disable=R0902,R0903
         delta_order=None,
         stack=True,
     ):
-        """Function Docstring"""
+        """
+        Class Constructor
+        """
+
         self.sr = sr  # pylint: disable=C0103
         self.n_fft = n_fft
         self.hop_length = hop_length
@@ -282,7 +303,10 @@ class MelSpectrogram:  # pylint: disable=R0902,R0903
         self.stack = stack
 
     def __call__(self, waveform):
-        """Function Docstring"""
+        """
+        Perform the Mel Spectrogram Transformation
+        """
+
         spectrogram = librosa.feature.melspectrogram(
             y=waveform,
             sr=self.sr,
@@ -313,10 +337,13 @@ class MelSpectrogram:  # pylint: disable=R0902,R0903
 
 
 class Rescale:  # pylint: disable=R0903
-    """Class Docstring"""
+    """ Rescale Class """
 
     def __call__(self, data):
-        """Function Docstring"""
+        """
+        Function Docstring
+        """
+
         std = np.std(data, axis=1, keepdims=True)
         std[std == 0] = 1
 
@@ -324,10 +351,15 @@ class Rescale:  # pylint: disable=R0903
 
 
 class Normalize:  # pylint: disable=R0903
-    """Class Docstring"""
+    """
+    Class Docstring
+    """
 
     def __call__(self, data):
-        """Function Docstring"""
+        """
+        Function Docstring
+        """
+
         data_ = (data > 0.1) * data
         std = np.std(data_, axis=1, keepdims=True)
         std[std == 0] = 1
@@ -357,6 +389,7 @@ class Normalize:  # pylint: disable=R0903
 
 #         return noisy_wav
 
+# finis
 
 # Local Variables:
 # compile-command: "pyflakes data.py; pylint-3 -d E0401 -f parseable data.py" # NOQA, pylint: disable=C0301

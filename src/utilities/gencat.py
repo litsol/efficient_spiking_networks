@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
-# gencat.py
-#
 
-""" Concatenate multiple generators into a single sequence """
+"""
+Concatenate multiple generators into a single sequence
+"""
 
 
 def gen_cat(sources):
-    """gencat"""
+    """
+    gen_cat
+    """
     for src in sources:
         yield from src
 

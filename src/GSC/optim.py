@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
 
-"""PyTorch implementation of Rectified Adam from
-https://github.com/LiyuanLucasLiu/RAdam"""
+"""
+PyTorch implementation of Rectified Adam from
+https://github.com/LiyuanLucasLiu/RAdam
+"""
 
 import math
 
@@ -12,7 +13,9 @@ from torch.optim.optimizer import Optimizer
 
 
 class RAdam(Optimizer):
-    """Class Docstring"""
+    """
+    Optimizer Class
+    """
 
     def __init__(  # pylint: disable=R0913
         self,
@@ -23,6 +26,10 @@ class RAdam(Optimizer):
         weight_decay=0,
         degenerated_to_sgd=True,
     ):
+        """
+        Class Constructor
+        """
+
         if 0.0 > lr:
             raise ValueError(f"Invalid learning rate: {lr}")
         if 0.0 > eps:
@@ -59,7 +66,10 @@ class RAdam(Optimizer):
     #     super().__setstate__(state)
 
     def step(self, closure=None):  # pylint: disable=R0912, R0914
-        """Function Docstring"""
+        """
+        Function Docstring
+        """
+
         loss = None
         if closure is not None:
             loss = closure()
@@ -158,6 +168,7 @@ class RAdam(Optimizer):
 
 
 # finis
+
 # Local Variables:
 # compile-command: "pyflakes optim.py; pylint-3 -f parseable optim.py" # NOQA, pylint: disable=C0301
 # End:

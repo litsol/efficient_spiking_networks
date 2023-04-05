@@ -1,15 +1,18 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
-#
 
-""" Grep a sequence of lines that match a re pattern """
+"""
+Grep a sequence of lines that match a re pattern
+"""
 
 import re
 
 
 def gen_grep(pat, lines):
-    """gengrep.py"""
+    """
+    gen_grep
+    """
+
     patc = re.compile(pat)
     return (line for line in lines if patc.search(line))
 

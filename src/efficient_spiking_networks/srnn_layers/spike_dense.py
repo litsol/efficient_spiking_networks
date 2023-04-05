@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
 
-"""  module docstring """
+"""
+Fully connected Spiking Network layer
+"""
 
 __all__ = ["SpikeDENSE", "SpikeBIDENSE", "ReadoutIntegrator"]
 
@@ -19,12 +20,14 @@ B_J0: float = sn.B_J0_VALUE
 def multi_normal_initilization(
     param, means=[10, 200], stds=[5, 20]
 ):  # pylint: disable=W0102
-    """multi_normal_initialization function
+    """
+    multi_normal_initialization function
 
     The tensor returned is composed of multiple, equal length
     partitions each drawn from a normal distribution described
     by a mean and std. The shape of the returned tensor is the same
-    at the original input tensor."""
+    at the original input tensor.
+    """
 
     shape_list = param.shape
     if len(shape_list) == 1:
@@ -56,7 +59,9 @@ def multi_normal_initilization(
 
 
 class SpikeDENSE(nn.Module):
-    """Spike_Dense class docstring"""
+    """
+    Spike_Dense class docstring
+    """
 
     def __init__(  # pylint: disable=R0913,W0231
         self,
@@ -71,7 +76,10 @@ class SpikeDENSE(nn.Module):
         device="cpu",
         bias=True,
     ):
-        """Class constructor member function docstring"""
+        """
+        Class constructor member function docstring
+        """
+
         super().__init__()
         self.mem = None
         self.spike = None
@@ -109,19 +117,24 @@ class SpikeDENSE(nn.Module):
             )
 
     def parameters(self):
-        """Return a list of parameters being trained."""
+        """
+        Return a list of parameters being trained.
+        """
+
         # The latter two are module parameters; the first two aren't
         # Where is dense.weight defined or assigned?
         return [self.dense.weight, self.dense.bias, self.tau_m, self.tau_adp]
 
     def set_neuron_state(self, batch_size):
-        """Initialize mem, spike and b tensors.
+        """
+        Initialize mem, spike and b tensors.
 
         The Variable API has been deprecated: Variables are no
         longer necessary to use autograd with tensors. Autograd
         automatically supports Tensors with requires_grad set to
         True.
         """
+
         # self.mem = (torch.rand(batch_size, self.output_dim) * self.b_j0).to(
         #     self.device
         # )
@@ -138,7 +151,9 @@ class SpikeDENSE(nn.Module):
         )
 
     def forward(self, input_spike):
-        """SpikeDENSE forward pass"""
+        """
+        SpikeDENSE forward pass
+        """
 
         d_input = self.dense(input_spike.float())
         (
@@ -161,7 +176,9 @@ class SpikeDENSE(nn.Module):
 
 
 class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
-    """Spike_Bidense class docstring"""
+    """
+    Spike_Bidense class docstring
+    """
 
     def __init__(  # pylint: disable=R0913
         self,
@@ -176,7 +193,10 @@ class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
         is_adaptive=1,
         device="cpu",
     ):
-        """Class constructor member function docstring"""
+        """
+        Class constructor member function docstring
+        """
+
         super().__init__()
         self.mem = None
         self.spike = None
@@ -203,11 +223,17 @@ class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
             )
 
     def parameters(self):
-        """parameter member function docstring"""
+        """
+        parameter member function docstring
+        """
+
         return [self.dense.weight, self.dense.bias, self.tau_m, self.tau_adp]
 
     def set_neuron_state(self, batch_size):
-        """set_neuron_state member function docstring"""
+        """
+        set_neuron_state member function docstring
+        """
+
         self.mem = (torch.rand(batch_size, self.output_dim) * B_J0).to(
             self.device
         )
@@ -217,7 +243,10 @@ class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
         )
 
     def forward(self, input_spike1, input_spike2):
-        """forward member function docstring"""
+        """
+        forward member function docstring
+        """
+
         d_input = self.dense(input_spike1.float(), input_spike2.float())
         (
             self.mem,
@@ -239,7 +268,9 @@ class SpikeBIDENSE(nn.Module):  # pylint: disable=R0902
 
 
 class ReadoutIntegrator(nn.Module):
-    """Redout_Integrator class docstring"""
+    """
+    Redout_Integrator class docstring
+    """
 
     def __init__(  # pylint: disable=R0913
         self,
@@ -251,7 +282,10 @@ class ReadoutIntegrator(nn.Module):
         device="cpu",
         bias=True,
     ):
-        """Class constructor member function"""
+        """
+        Class constructor member function
+        """
+
         super().__init__()
         self.mem = None
 
@@ -269,22 +303,33 @@ class ReadoutIntegrator(nn.Module):
         nn.init.normal_(self.tau_m, tau_m, tau_m_inital_std)
 
     def parameters(self):
-        """parameters member function docstring"""
+        """
+        parameters member function docstring
+        """
+
         return [self.dense.weight, self.dense.bias, self.tau_m]
 
     def set_neuron_state(self, batch_size):
-        """set_neuron_state member function docstring"""
+        """
+        set_neuron_state member function docstring
+        """
+
         # self.mem = torch.rand(batch_size,self.output_dim).to(self.device)
         self.mem = (torch.zeros(batch_size, self.output_dim)).to(self.device)
 
     def forward(self, input_spike):
-        """forward member function docstring"""
+        """
+        forward member function docstring
+        """
+
         d_input = self.dense(input_spike.float())
         self.mem = sn.output_Neuron(
             d_input, self.mem, self.tau_m, device=self.device
         )
         return self.mem
 
+
+# finis
 
 # Local Variables:
 # compile-command: "pyflakes spike_dense.py; pylint-3 -d E0401 -f parseable spike_dense.py" # NOQA, pylint: disable=C0301

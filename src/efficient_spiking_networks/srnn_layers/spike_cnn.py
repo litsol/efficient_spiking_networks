@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
 
-"""  module docstring """
+"""
+Spiking Convoluted Networks.
+"""
 
 __all__ = ["SpikeCov1D", "SpikeCov2D"]
 
@@ -16,7 +17,9 @@ B_J0 = 1.6
 
 
 class SpikeCov1D(nn.Module):  # pylint: disable=R0902
-    """Spike_Cov1D class docstring"""
+    """
+    Spike_Cov1D class docstring
+    """
 
     def __init__(  # pylint: disable=R0913,R0914
         self,
@@ -36,7 +39,10 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
         is_adaptive=1,
         device="cpu",
     ):
-        """Class constructor member function docstring"""
+        """
+        Class constructor member function docstring
+        """
+
         super().__init__()
         self.mem = None
         self.spike = None
@@ -81,11 +87,17 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
         nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
 
     def parameters(self):
-        """parameters member function docstring"""
+        """
+        parameters member function docstring
+        """
+
         return [self.dense.weight, self.dense.bias, self.tau_m, self.tau_adp]
 
     def set_neuron_state(self, batch_size):
-        """se_neuron_state member function docstring"""
+        """
+        set_neuron_state member function docstring
+        """
+
         self.mem = (
             torch.zeros(batch_size, self.output_size[0], self.output_size[1])
             * B_J0
@@ -101,7 +113,10 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
         ).to(self.device)
 
     def forward(self, input_spike):
-        """forward member function docstring"""
+        """
+        forward member function docstring
+        """
+
         d_input = self.conv(input_spike.float())
         if self.pooling is not None:
             d_input = self.pooling(d_input)
@@ -124,7 +139,10 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
         return self.mem, self.spike
 
     def compute_output_size(self):
-        """compute_output member function docstring"""
+        """
+        compute_output member function docstring
+        """
+
         x_emp = torch.randn([1, self.input_size[0], self.input_size[1]])
         out = self.conv(x_emp)
         if self.pooling is not None:
@@ -134,7 +152,9 @@ class SpikeCov1D(nn.Module):  # pylint: disable=R0902
 
 
 class SpikeCov2D(nn.Module):  # pylint: disable=R0902
-    """Spike_Cov2D docstring"""
+    """
+    Spike_Cov2D docstring
+    """
 
     def __init__(  # pylint: disable=R0913
         self,
@@ -191,11 +211,17 @@ class SpikeCov2D(nn.Module):  # pylint: disable=R0902
         nn.init.normal_(self.tau_adp, tau_adp_inital, tau_adp_inital_std)
 
     def parameters(self):
-        """parameters member function docstring"""
+        """
+        parameters member function docstring
+        """
+
         return [self.dense.weight, self.dense.bias, self.tau_m, self.tau_adp]
 
     def set_neuron_state(self, batch_size):
-        """set_neuron_state member function docstring"""
+        """
+        set_neuron_state member function docstring
+        """
+
         self.mem = torch.rand(batch_size, self.output_size).to(self.device)
         self.spike = torch.zeros(batch_size, self.output_size).to(self.device)
         self.b = (torch.ones(batch_size, self.output_size) * B_J0).to(
@@ -203,7 +229,10 @@ class SpikeCov2D(nn.Module):  # pylint: disable=R0902
         )
 
     def forward(self, input_spike):
-        """forward member function docstring"""
+        """
+        forward member function docstring
+        """
+
         d_input = self.conv(input_spike.float())
         if self.pooling is not None:
             d_input = self.pool(d_input)
@@ -226,7 +255,10 @@ class SpikeCov2D(nn.Module):  # pylint: disable=R0902
         return self.mem, self.spike
 
     def compute_output_size(self):
-        """compute_output_size member function docstring"""
+        """
+        compute_output_size member function docstring
+        """
+
         x_emp = torch.randn(
             [1, self.input_size[0], self.input_size[1], self.input_size[2]]
         )
@@ -236,6 +268,8 @@ class SpikeCov2D(nn.Module):  # pylint: disable=R0902
         # print(self.name+'\'s size: ', out.shape[1:])
         return out.shape[1:]
 
+
+# finis
 
 # Local Variables:
 # compile-command: "pyflakes spike_cnn.py; pylint-3 -d E0401 -f parseable spike_cnn.py" # NOQA, pylint: disable=C0301

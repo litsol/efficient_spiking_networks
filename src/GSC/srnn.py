@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
 # SPDX-License-Identifier: MPL-2.0
-#
 
-"""  This is the BPTT spiking recurrent neural network (srnn)
-     example using the Google Speech Commands dataset.  """
+"""
+This is the BPTT spiking recurrent neural network (srnn)
+example using the Google Speech Commands dataset.
+"""
 
 import pprint
 import random
@@ -24,7 +25,7 @@ from loguru import logger
 from torch import nn
 from torch.optim.lr_scheduler import StepLR
 
-# srnn specific modules
+# srnn specific modules.
 import efficient_spiking_networks.srnn_layers.spike_dense as sd
 import efficient_spiking_networks.srnn_layers.spike_neuron as sn
 import efficient_spiking_networks.srnn_layers.spike_rnn as sr
@@ -38,26 +39,26 @@ from GSC.data import (  # noqa: E501 pylint: disable=C0301
 # modules that are associated with this example.
 from GSC.utils import generate_noise_files
 
-# Two generator functions; part of our utilities suite
+# Two generator functions; part of our utilities suite.
 from utilities.gendfind import gen_dfind  # pylint: disable=C0411
 from utilities.genfind import gen_find  # pylint: disable=C0411
 
-# Setup pretty printing
+# Setup pretty printing.
 pp = pprint.PrettyPrinter(indent=4, compact=True, width=42)
 
 
-# Two class_dict helper functions
+# Two class_dict helper functions.
 def label_to_index(class_dict: dict, word: str) -> int:
     """
-    Return the position of the word in labels
+    Return the position of the word in labels.
     """
     return class_dict[word]
 
 
 def index_to_label(class_dict: dict, index: int) -> str:
     """
-    Return the word corresponding to the index in labels
-    This is the inverse of label_to_index
+    Return the word corresponding to the index in labels.
+    This is the inverse of label_to_index.
     """
 
     return list(class_dict.keys())[list(class_dict.values()).index(index)]
@@ -65,7 +66,12 @@ def index_to_label(class_dict: dict, index: int) -> str:
 
 def read_configuration(filename: Path) -> dict:
     """
-    function docstring
+    Several experiment parameters are defined in a TOML
+    configuration file; whose filename is an argument to the the
+    simulation code.
+
+    This function reads the TOML configuration file, validate its's
+    contents against a schema, and return a configuration dictionary.
     """
     with open(filename, mode="rb") as fp:  # pylint: disable=C0103
         config = tomli.load(fp)
@@ -118,11 +124,11 @@ def collate_fn(data):
     return x_batch, y_batch
 
 
-# Definition of the overall RNN network
+# Definition of the overall RNN network.
 class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
 
     """
-    Class docstring
+    This class defines an SRNN.
     """
 
     def __init__(self, device, bias: bool, thr_func):
@@ -145,6 +151,11 @@ class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
             device=device,
             bias=self.bias,
         )
+
+        self.dense_2 = sd.ReadoutIntegrator(
+            N, 12, tau_m=10, tau_m_inital_std=1, device=device, bias=self.bias
+        )
+
         self.rnn_1 = sr.SpikeRNN(
             N,
             N,
@@ -155,15 +166,12 @@ class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
             device=device,
             bias=self.bias,
         )
-        self.dense_2 = sd.ReadoutIntegrator(
-            N, 12, tau_m=10, tau_m_inital_std=1, device=device, bias=self.bias
-        )
 
-        # Please comment this code
+        # Please comment this code.
         self.thr = nn.Parameter(torch.Tensor(1))
         nn.init.constant_(self.thr, 5e-2)
 
-        # Initialize the network layers
+        # Initialize the network layers.
         torch.nn.init.kaiming_normal_(self.rnn_1.recurrent.weight)
 
         torch.nn.init.xavier_normal_(self.dense_1.dense.weight)
@@ -176,7 +184,7 @@ class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
 
     def forward(self, inputs):  # pylint: disable=R0914
         """
-        Forward member function docstring
+        The forward pass.
         """
         # What is this that returns 4 values?
         # What is b?
@@ -204,18 +212,15 @@ class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
         # For every timestep update the membrane potential
         for i in range(seq_length):
             inputs_x = inputs_s[:, :, i, :].reshape(b, channel * inputs_dim)
+            _, spike_layer1 = self.dense_1.forward(inputs_x)
             (
-                mem_layer1,  # mem_layer1 unused! pylint: disable=W0612,C0301
-                spike_layer1,
-            ) = self.dense_1.forward(inputs_x)
-            (
-                mem_layer2,  # mem_layer2 unused! pylint: disable=W0612,C0301
+                _,
                 spike_layer2,
             ) = self.rnn_1.forward(spike_layer1)
             # mem_layer3,spike_layer3 = self.dense_2.forward(spike_layer2)
             mem_layer3 = self.dense_2.forward(spike_layer2)
 
-            # #tracking #spikes (firing rate)
+            # tracking number of spikes (firing rate).
             output += mem_layer3
             fr_1.append(spike_layer1.detach().cpu().numpy().mean())
             fr_2.append(spike_layer2.detach().cpu().numpy().mean())
@@ -231,7 +236,7 @@ class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
 
 def test(data_loader, device, model, is_show=0):
     """
-    test function docstring
+    Test the network against the testing data.
     """
 
     test_acc = 0.0
@@ -269,7 +274,8 @@ def train(
     scheduler=None,
 ):  # pylint: disable=R0913,R0914
     """
-    train function docstring
+    Train the network with by the standard forward pass - loss
+    calculation - backward propogation cycle.
     """
     acc_list = []
     best_acc = 0
@@ -339,22 +345,22 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     """
     Spiking Recurrent Neural Networks
     """
+    # Read the configuration file.
     config = read_configuration(config_file)
 
-    # Setup logger level
+    # Setup logger level.
     logger.remove()
     logger.add(sys.stderr, level=config["logger"]["level"])
 
-    # Use cuda if it's available
+    # Use cuda if it's available.
     device = torch.device(  # pylint: disable=E1101
         "cuda:0" if torch.cuda.is_available() else "cpu"
     )
     if config["cuda"]["cuda"] is False:
         device = torch.device("cpu")
-
     logger.info(f"{device=}")
 
-    # Setup number of workers dependent upon where the code is run
+    # Setup number of workers dependent upon where the code is run.
     number_of_workers = 4 if device.type == "cpu" else 8
     pin_memory = device.type == "cuda"
 
@@ -364,7 +370,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     logger.info(f"{pin_memory=}")
 
     # Specify the several paramaters that we'll use throughout this example.
-    # Paths to the data
+    # Paths to the data.
     dataroot = Path(config["data"]["dataroot"])
     gsc_url = config["data"]["gsc_url"]
     gsc = dataroot / "SpeechCommands" / gsc_url
@@ -390,8 +396,8 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         )
     )
 
-    # Parameters for converting a wav into a mel-scaled spectrogram
-    # One of the transformations applied to each dataset
+    # Parameters for converting a wav into a mel-scaled spectrogram.
+    # This is one of the transformations applied to each dataset.
     delta_order = config["mel"]["delta_order"]
     fmax = config["mel"]["fmax"]
     fmin = config["mel"]["fmin"]
@@ -423,7 +429,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         )
     )
 
-    # Compose transformations applied to each dataset
+    # Compose transformations applied to each dataset.
     pad = Pad(size)
     rescale = Rescale()
     transforms = torchvision.transforms.Compose([pad, melspec, rescale])
@@ -433,11 +439,11 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     thr_func = sn.ActFunADP.apply
     logger.info(f"{thr_func=}")
 
-    # Specify our loss function
+    # Specify our loss function.
     criterion_f = nn.CrossEntropyLoss()  # nn.NLLLoss()
     logger.info(f"{criterion_f=}")
 
-    # Retrieve the Google Speech Commands Dataset
+    # Retrieve the Google Speech Commands Dataset.
     torchaudio.datasets.SPEECHCOMMANDS(
         dataroot,
         url=gsc_url,
@@ -445,7 +451,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         download=True,
     )
 
-    # Create random noise files for training and validation
+    # Create random noise files for training and validation.
     silence_folder = gsc / "_silence_"
     if not silence_folder.exists():
         # Create the folder where we will write white noise files.
@@ -462,7 +468,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         # we will use to generate our white noise files.
         background_noise_file = gsc / "_background_noise_" / "white_noise.wav"
 
-        # 260 validation / 2300 training
+        # 260 validation / 2300 training.
         generate_noise_files(
             nb_files=2560,
             noise_file=background_noise_file,
@@ -473,7 +479,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
 
         # Compose a list of the new noise files
         # and write the first 260 names to the
-        # silence_validation_list.txt file
+        # silence_validation_list.txt file.
         silence_files = [*gen_find("*.wav", silence_folder)]
         with open(
             gsc / "silence_validation_list.txt", mode="w", encoding="utf-8"
@@ -483,40 +489,45 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
 
         logger.info("{Successfully created silence random noise files.")
 
-    # Create Class Label Dictionary
+    # Create Class Label Dictionary.
+
     # The dictionary's keys:value pairs are category names gleaned from
-    # the GSC directory structure and integers, i.e. [0-10, 11].  The
-    # first eleven keys or categories, whether chozen ordinally or drawn
+    # the GSC directory structure and integers, i.e. [0-9, 10, 11].  The
+    # first ten keys or categories, whether chozen ordinally or drawn
     # randomly, recieve as values the first ten integers. The next
-    # key:value pair is {'unknown':11}. The remaining key or categories
-    # all recieve the value 11.  The values [0-10] represent testing
-    # categories.
+    # two key:value pairs are {'_silencee_':10, 'unknown':11}. The
+    # remaining key or categories all recieve the value 11.
+    # The values [0-10] represent testing categories.
 
     # Beginning at GSC find directories without a leading underscore.
     class_labels = list(
         {Path(dir).parts[-1] for dir in gen_dfind(r"^(?!_).*", gsc)}
     )
-    logger.info(f"Class Labels:\n{pp.pformat(class_labels)}")
+    logger.info(
+        f"Class Labels[{len(class_labels)}]:\n{pp.pformat(class_labels)}"
+    )
 
     # Compose the class dictionary by choosing
-    # the first eleven categories sequentially.
+    # the first twn categories sequentially.
     # class_dict = dict(
-    #     {j: i for i, j in enumerate(class_labels[:11])},
-    #     **{"unknown": 11},
+    #     {j: i for i, j in enumerate(class_labels[:10])},
+    #     **{"_silence_": 10},
+    #     **{"_unknown_": 11},
     #     **{j: 11 for _, j in enumerate(class_labels[11:])},
     # )
 
     # Compose the class dictionary by choosing
-    # the first eleven categories randomly.
+    # the first ten categories randomly.
     # fmt: off
     class_dict = dict(
-        {j: i for i, j in enumerate([class_labels.pop(random.randrange(len(class_labels))) for _ in range(11)])},  # noqa: E501 pylint: disable=C0301
-        **{"unknown": 11},
+        {j: i for i, j in enumerate([class_labels.pop(random.randrange(len(class_labels))) for _ in range(10)])},  # noqa: E501 pylint: disable=C0301
+        **{"_silence_": 10},
+        **{"_unknown_": 11},
         **{i: 11 for i in class_labels})
     # fmt: on
-    logger.info(f"class dict:\n{pp.pformat(class_dict)}")
+    logger.info(f"class dict[{len(class_dict)}]:\n{pp.pformat(class_dict)}")
 
-    # Reading and preprocessing the data
+    # Reading and preprocessing the data.
 
     # The training dataset.
     # Note that the transformations specified here are applied in
@@ -541,7 +552,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     # labels = sorted(list(set(index_to_label(class_dict, datapoint[1]) for datapoint in gsc_training_dataset)))  # noqa: E501 pylint: disable=C0301
     # logger.info(f"training labels:\n{pp.pformat(labels)}]")
 
-    # The training dataloader
+    # The training dataloader.
     gsc_training_dataloader = torch.utils.data.DataLoader(
         gsc_training_dataset,
         batch_size=batch_size,
@@ -557,7 +568,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     logger.info(f"Training labels, i.e. indices:\n{pp.pformat(gsc_labels)}]")
     # logger.info(f"Training labels[{len(gsc_labels)}]:\n{pp.pformat(gsc_labels)}")  # noqa: E501
 
-    # The testing dataset
+    # The testing dataset.
     gsc_testing_dataset = GSCSSubsetSC(
         root=dataroot,
         url=gsc_url,
@@ -571,7 +582,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         f"The testing data consists of {len(gsc_testing_dataset)} samples."
     )
 
-    # The testing dataloader
+    # The testing dataloader.
     gsc_testing_dataloader = torch.utils.data.DataLoader(
         gsc_testing_dataset,
         batch_size=batch_size,
@@ -582,15 +593,15 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         pin_memory=pin_memory,
     )
 
-    # Instantiate the model
+    # Instantiate the model.
     model = RecurrentSpikingNetwork(device, bias, thr_func)
     model.to(device)
 
-    # Test before training
+    # Test before training.
     test_acc_before_training = test(gsc_testing_dataloader, device, model)
     logger.info(f"{test_acc_before_training=}")
 
-    # Prepare for training
+    # Prepare for training.
     base_params = (
         [
             model.dense_1.dense.weight,
@@ -632,7 +643,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     # scheduler_f = LambdaLR(optimizer_f,lr_lambda=lambda epoch: 1-epoch/70)
     # scheduler_f = ExponentialLR(optimizer_f, gamma=0.85)
 
-    # Training
+    # Training.
     train_acc_training_complete = train(
         gsc_training_dataloader,
         gsc_testing_dataloader,
@@ -645,7 +656,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     )
     logger.info(f"TRAINING COMPLETE: {train_acc_training_complete=}")
 
-    # Testing
+    # Testing.
     test_acc_after_training = test(gsc_testing_dataloader, device, model)
     logger.info(f"TESTING COMPLETE: {test_acc_after_training}")
 
@@ -654,6 +665,7 @@ if __name__ == "__main__":
     app()
 
 # finis
+
 # Local Variables:
 # compile-command: "pyflakes srnn.py; pylint-3 -f parseable srnn.py" # NOQA, pylint: disable=C0301
 # End:

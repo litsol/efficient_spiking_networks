@@ -1,15 +1,18 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
-#
 
-"""  A function that generates files that match a given filename pattern """
+"""
+A function that generates files that match a given filename pattern
+"""
 
 from pathlib import Path
 
 
 def gen_find(filepat, top):
-    """genfind"""
+    """
+    gen_find
+    """
+
     yield from Path(top).rglob(filepat)
 
 

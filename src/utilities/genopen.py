@@ -1,16 +1,20 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
 
-"""Takes a sequence of filenames as input and yields a sequence of
-file objects that have been suitably open"""
+"""
+Takes a sequence of filenames as input and yields
+a sequence of file objects that have been suitably open.
+"""
 
 import bz2
 import gzip
 
 
 def gen_open(paths):
-    """genopen"""
+    """
+    gen_open
+    """
+
     for path in paths:
         if path.suffix == ".gz":
             yield gzip.open(path, "rt")

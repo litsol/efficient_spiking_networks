@@ -1,17 +1,20 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
-# gendfind.py
-#
 
-""" A function that generates files that match a given regex pattern """
+"""
+A function that generates files
+that match a given regex pattern.
+"""
 
 import os
 import re
 
 
 def gen_dfind(dirpat, top):
-    """Traverse the directorys and yield the results."""
+    """
+    Traverse the directorys and yield the results.
+    """
+
     regexp = re.compile(dirpat)
     for path, dirlist, _ in os.walk(top):
         for name in [dir for dir in dirlist if regexp.search(dir) is not None]:

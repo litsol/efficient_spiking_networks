@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
 
-"""  module docstring """
+"""
+Recurrent Spiking Neural Network layer
+"""
 
 __all__ = ["SpikeRNN"]
 
@@ -17,7 +18,9 @@ B_J0: float = sn.B_J0_VALUE
 
 
 class SpikeRNN(nn.Module):  # pylint: disable=R0902
-    """Spike_Rnn class docstring"""
+    """
+    Spike_Rnn class docstring
+    """
 
     def __init__(  # pylint: disable=R0913
         self,
@@ -32,7 +35,10 @@ class SpikeRNN(nn.Module):  # pylint: disable=R0902
         device="cpu",
         bias: bool = True,
     ) -> None:
-        """Class constructor member function"""
+        """
+        Class constructor member function
+        """
+
         super().__init__()
         self.mem: Variable
         self.spike = None
@@ -60,7 +66,10 @@ class SpikeRNN(nn.Module):  # pylint: disable=R0902
             )
 
     def parameters(self):
-        """parameters member function docstring"""
+        """
+        parameters member function docstring
+        """
+
         return [
             self.dense.weight,
             self.dense.bias,
@@ -71,7 +80,9 @@ class SpikeRNN(nn.Module):  # pylint: disable=R0902
         ]
 
     def set_neuron_state(self, batch_size):
-        """set_neuron_state member function docstring"""
+        """
+        set_neuron_state member function docstring
+        """
 
         self.mem = Variable(
             torch.zeros(batch_size, self.output_dim) * self.b_j0
@@ -84,7 +95,10 @@ class SpikeRNN(nn.Module):  # pylint: disable=R0902
         ).to(self.device)
 
     def forward(self, input_spike):
-        """forward member function docstring"""
+        """
+        forward member function docstring
+        """
+
         d_input = self.dense(input_spike.float()) + self.recurrent(self.spike)
         (
             self.mem,
@@ -104,6 +118,8 @@ class SpikeRNN(nn.Module):  # pylint: disable=R0902
 
         return self.mem, self.spike
 
+
+# finis
 
 # Local Variables:
 # compile-command: "pyflakes spike_rnn.py; pylint-3 -d E0401 -f parseable spike_rnn.py" # NOQA, pylint: disable=C0301

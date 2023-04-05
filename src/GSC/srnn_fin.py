@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 # SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
-#
 # SPDX-License-Identifier: MPL-2.0
 
 """
@@ -543,6 +542,7 @@ test_acc_after_training = test(test_dataloader)
 logger.info(f"{test_acc_after_training}")
 
 logger.info("TESTING COMPLETE")
+
 
 # finis
 
