@@ -49,6 +49,16 @@ existing directory elsewhere for this configuration to succeed.
 
 ### Executing program
 
+Before starting a simulation add the NVIDIA cudnn and nccl libraries
+to your LD_LIBRARY_PATH. Adjusts the paths as necessary.
+
+
+
+```
+export LD_LIBRARY_PATH=<Path to the repositry>/efficient_spiking_networks/.venv/lib/python3.10/site-packages/nvidia/cudnn/lib:<Path to the repositry>/efficient_spiking_networks/.venv/lib/python3.10/site-packages/nvidia/nccl/lib
+```
+
+
 The simulation executable's name is srnn.py; it resides in the src/GSC
 directory. Use pdm to launch it. The simulation executable requires
 one argument - a TOML configuration file.
