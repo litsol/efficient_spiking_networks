@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: 2021 Centrum Wiskunde en Informatica
+# SPDX-License-Identifier: MPL-2.0
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore
