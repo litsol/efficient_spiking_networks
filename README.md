@@ -5,12 +5,12 @@
 
 This code implements an Adaptive Spiking Recurrent Neural
 Network. This is an adaptation of the Google Speech Commands (GSC)
-porton of Bojian Yin's original [Adaptive (SRNN) Spiking Recurrent
-NeuralNetwork](https://github.com/byin-cwi/Efficient-spiking-networks.git)
-code. The data input, partitioning and preprocessing machinery has
+portion of Bojian Yin's original [Adaptive (SRNN) Spiking Recurrent
+Neural Network](https://github.com/byin-cwi/Efficient-spiking-networks.git)
+code. The data input, partitioning and prepossessing machinery has
 been rewritten and no longer depends on a custom pre-installed GSC
 dataset, but uses the standard GSC distribution.  Experiment
-parameters, formerly hard-coded in the simulation code have beem moved
+parameters, formerly hard-coded in the simulation code have been moved
 to a separate TOML configuration file.
 
 
@@ -40,7 +40,7 @@ pdm setup
 The first time you run a simulation the software will download the GSC
 dataset into the directory you specify as **dataroot** in the
 configuration file read by the software. This **dataroot** directory
-must exist for the dowload to succeed. Consider the default
+must exist for the download to succeed. Consider the default
 configuration file src/GSC/config-v1-cuda.toml. The **dataroot**
 parameter is assigned a relative path in the same directory named
 'google.' Either create this directory or create a symbolic link to an
@@ -50,7 +50,7 @@ existing directory elsewhere for this configuration to succeed.
 ### Executing program
 
 Before starting a simulation add the NVIDIA cudnn and nccl libraries
-to your LD_LIBRARY_PATH. Adjusts the paths as necessary.
+to your LD_LIBRARY_PATH. Adjust the paths as necessary.
 
 
 
