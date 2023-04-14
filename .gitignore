@@ -213,4 +213,8 @@ flycheck_*.el
 # network security
 /network-security.data
 
+README.html
+github.css
+src/LOGS/
+
 # finis

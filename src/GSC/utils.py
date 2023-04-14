@@ -72,10 +72,12 @@ def txt2list(filename):
 
 def get_random_noise(noise_files, size):  # pylint: disable=C0116
     noise_idx = np.random.choice(len(noise_files))
-    fs, noise_wav = wav.read(noise_files[noise_idx])  # noqa: E501 pylint: disable=W0612,C0103,
+    _, noise_wav = wav.read(
+        noise_files[noise_idx]
+    )  # noqa: E501 pylint: disable=W0612,C0103,
 
     offset = np.random.randint(len(noise_wav) - size)
-    noise_wav = noise_wav[offset: offset + size].astype(float)
+    noise_wav = noise_wav[offset : offset + size].astype(float)  # noqa: E203
 
     return noise_wav
 
@@ -89,7 +91,11 @@ def generate_random_silence_files(  # pylint: disable=C0116
 
 
 def generate_noise_files(
-    nb_files, noise_file, output_folder, file_prefix, sr  # noqa: E501 pylint: disable=C0103
+    nb_files,
+    noise_file,
+    output_folder,
+    file_prefix,
+    sr,  # noqa: E501 pylint: disable=C0103
 ):
     """
     Generate many random noise files by taking random spans from a
@@ -101,7 +107,7 @@ def generate_noise_files(
             noise_file,
         )
         offset = np.random.randint(len(noise_wav) - sr)
-        noise_wav = noise_wav[offset: offset + sr].astype(float)
+        noise_wav = noise_wav[offset : offset + sr].astype(float)  # noqa: E203
         fn = output_folder / "".join(  # pylint: disable=C0103
             [file_prefix, f"{i}", ".wav"]
         )

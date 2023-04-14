@@ -7,14 +7,6 @@ repos:
   rev: 22.10.0
   hooks:
   - id: black
-    exclude: |
-            (?x)^(
-                src/GSC/data.py|
-                src/GSC/optim.py|
-                src/GSC/utils.py|
-                process_speech_commands_data.py|
-            )$
-
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v0.982
   hooks:

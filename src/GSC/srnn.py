@@ -80,6 +80,7 @@ def read_configuration(filename: Path) -> dict:
         case {
             "data": {"dataroot": str(), "gsc_url": str()},
             "srnn": {
+                "network_size": int(),
                 "learning_rate": float(),
                 "epochs": int(),
                 "batch_size": int(),
@@ -131,19 +132,18 @@ class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
     This class defines an SRNN.
     """
 
-    def __init__(self, device, bias: bool, thr_func):
+    def __init__(self, device, bias: bool, thr_func, network_size: int = 256):
         """
         Constructor docstring
         """
         super().__init__()
-        N = 256  # pylint: disable=C0103
         self.bias = bias
         self.thr_func = thr_func
 
         # Here is what the network looks like
         self.dense_1 = sd.SpikeDENSE(
             40 * 3,
-            N,
+            network_size,
             tau_adp_inital_std=50,
             tau_adp_inital=200,
             tau_m=20,
@@ -153,12 +153,17 @@ class RecurrentSpikingNetwork(nn.Module):  # pylint: disable=R0903
         )
 
         self.dense_2 = sd.ReadoutIntegrator(
-            N, 12, tau_m=10, tau_m_inital_std=1, device=device, bias=self.bias
+            network_size,
+            12,
+            tau_m=10,
+            tau_m_inital_std=1,
+            device=device,
+            bias=self.bias,
         )
 
         self.rnn_1 = sr.SpikeRNN(
-            N,
-            N,
+            network_size,
+            network_size,
             tau_adp_inital_std=50,
             tau_adp_inital=200,
             tau_m=20,
@@ -377,6 +382,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     logger.info("\n".join([f"{dataroot=}", f"{gsc_url=}", f"{gsc=}"]))
 
     # Specify the learning rate, etc.
+    network_size = config["srnn"]["network_size"]
     learning_rate = config["srnn"]["learning_rate"]
     epochs = config["srnn"]["epochs"]
     batch_size = config["srnn"]["batch_size"]
@@ -594,7 +600,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     )
 
     # Instantiate the model.
-    model = RecurrentSpikingNetwork(device, bias, thr_func)
+    model = RecurrentSpikingNetwork(device, bias, thr_func, network_size)
     model.to(device)
 
     # Test before training.

@@ -35,7 +35,10 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
         transform: Optional[str] = None,
         class_dict: dict = None,
     ) -> None:
-        """Function Docstring"""
+        """
+        Function Docstring
+        """
+
         super().__init__(
             root, url=url, folder_in_archive="SpeechCommands", download=True
         )
@@ -45,7 +48,10 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
         self.class_dict = class_dict
 
         def load_list(filename):
-            """Function Docstring"""
+            """
+            Function Docstring
+            """
+
             filepath = os.path.join(self._path, filename)
             with open(filepath, mode="r", encoding="utf-8") as fileobj:
                 return [
@@ -66,7 +72,11 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
                 + load_list("silence_validation_list.txt")
             )
             excludes = set(excludes)
-            self._walker = [w for w in self._walker if w not in excludes]  # noqa: E501 pylint: disable=C0103
+            self._walker = [
+                w
+                for w in self._walker  # pylint: disable=C0103
+                if w not in excludes  # pylint: disable=C0103
+            ]  # noqa: E501 pylint: disable=C0103
 
     def __getitem__(self, n):
         """This iterator return a tuple consisting of a waveform and
@@ -84,17 +94,23 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
             waveform /= maximum
         if self.transform is not None:
             waveform = self.transform(waveform.squeeze())
-        return (waveform, self.class_dict[metadata[2]],)
+        return (
+            waveform,
+            self.class_dict[metadata[2]],
+        )
 
 
 class SpeechCommandsDataset(Dataset):
-    """Class Docstring"""
+    """
+    Class Docstring
+    """
 
     def __init__(  # pylint: disable=R0912,R0913,R0914
-        self, data_root, label_dct, mode,
-        transform=None, max_nb_per_class=None
+        self, data_root, label_dct, mode, transform=None, max_nb_per_class=None
     ):
-        """Function Docstring"""
+        """
+        Function Docstring
+        """
 
         assert mode in [
             "train",
@@ -161,7 +177,9 @@ class SpeechCommandsDataset(Dataset):
             selected_idx = []
             for label in np.unique(self.labels):
                 label_idx = [
-                    i for i, x in enumerate(self.labels) if x == label   # noqa: E501 pylint: disable=C0103
+                    i
+                    for i, x in enumerate(self.labels)  # pylint: disable=C0103
+                    if x == label  # noqa: E501 pylint: disable=C0103
                 ]
                 if len(label_idx) < max_nb_per_class:
                     selected_idx += label_idx
@@ -174,18 +192,24 @@ class SpeechCommandsDataset(Dataset):
             self.labels = [self.labels[idx] for idx in selected_idx]
 
         if self.mode == "train":
-            label_weights = 1.0/np.unique(self.labels, return_counts=True)[1]
+            label_weights = 1.0 / np.unique(self.labels, return_counts=True)[1]
             label_weights /= np.sum(label_weights)
             self.weights = torch.DoubleTensor(  # pylint: disable=E1101
                 [label_weights[label] for label in self.labels]
             )
 
     def __len__(self):
-        """Function Docstring"""
+        """
+        Function Docstring
+        """
+
         return len(self.labels)
 
     def __getitem__(self, idx):
-        """Function Docstring"""
+        """
+        Function Docstring
+        """
+
         filename = self.filenames[idx]
         item = wav.read(filename)[1].astype(float)
         m = np.max(np.abs(item))  # pylint: disable=C0103
@@ -200,7 +224,9 @@ class SpeechCommandsDataset(Dataset):
 
 
 class Pad:  # pylint: disable=R0903
-    """ Pad class """
+    """
+    Pad class
+    """
 
     def __init__(self, size: int):
         """
@@ -337,7 +363,7 @@ class MelSpectrogram:  # pylint: disable=R0902,R0903
 
 
 class Rescale:  # pylint: disable=R0903
-    """ Rescale Class """
+    """Rescale Class"""
 
     def __call__(self, data):
         """

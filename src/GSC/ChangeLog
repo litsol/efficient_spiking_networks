@@ -1,3 +1,10 @@
+2023-04-14  Michael Guravage  <michael@odysseus>
+
+	* config-v1-cuda.toml: Add new network_size parameter.
+
+	* srnn.py (read_configuration): Add new network_size paramater
+	throughout.
+
 2023-03-24  Michael Guravage  <guravage@arda.itf.cwi.nl>
 
 	* fuse.py: Forgot to specify the LEARNING_RATE.

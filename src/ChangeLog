@@ -1,0 +1,3 @@
+2023-04-14  Michael Guravage  <michael@odysseus>
+
+	* code.tex (chapter{spike_neuron.py}): Corrected path to utilities source files.

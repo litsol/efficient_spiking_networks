@@ -6,6 +6,7 @@
     gsc_url = "speech_commands_v0.01"
 
 [srnn]
+    network_size = 256
     learning_rate = 3e-3
     epochs = 30
     batch_size = 32
