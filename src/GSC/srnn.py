@@ -362,7 +362,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         "cuda:0" if torch.cuda.is_available() else "cpu"
     )
     if config["cuda"]["cuda"] is False:
-        device = torch.device("cpu")
+        device = torch.device("cpu")  # pylint: disable=E1101
     logger.info(f"{device=}")
 
     # Setup number of workers dependent upon where the code is run.
@@ -483,14 +483,26 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
             sr=sample_rate,
         )
 
-        # Compose a list of the new noise files
-        # and write the first 260 names to the
-        # silence_validation_list.txt file.
+        # Compose a list of the new noise files.  Write the first 260
+        # names to silence_validation_list.txt, and the remaining 2300
+        # to silence_training_list.txt.
+
         silence_files = [*gen_find("*.wav", silence_folder)]
+
+        # Write the first 260 filenames to silence_validation_list.txt.
         with open(
             gsc / "silence_validation_list.txt", mode="w", encoding="utf-8"
         ) as fp:  # pylint: disable=C0103
             for filename in silence_files[:260]:
+                filename = Path(*Path(filename).parts[-2:])  # Relative path
+                fp.write(f"{filename}\n")
+
+        # Write the remaining 2300 filenames to silence_training_list.txt.
+        with open(
+            gsc / "silence_training_list.txt", mode="w", encoding="utf-8"
+        ) as fp:  # pylint: disable=C0103
+            for filename in silence_files[260:]:
+                filename = Path(*Path(filename).parts[-2:])  # Relative path
                 fp.write(f"{filename}\n")
 
         logger.info("{Successfully created silence random noise files.")
@@ -542,7 +554,6 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     gsc_training_dataset = GSCSSubsetSC(
         root=dataroot,
         url=gsc_url,
-        folder_in_archive="SpeechCommands",
         download=True,
         subset="training",
         transform=transforms,
@@ -578,7 +589,6 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     gsc_testing_dataset = GSCSSubsetSC(
         root=dataroot,
         url=gsc_url,
-        folder_in_archive="SpeechCommands",
         download=True,
         subset="testing",
         transform=transforms,

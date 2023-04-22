@@ -216,5 +216,6 @@ flycheck_*.el
 README.html
 github.css
 src/LOGS/
+src/GSC/google
 
 # finis

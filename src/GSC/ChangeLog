@@ -1,3 +1,22 @@
+2023-04-22  Michael  <michael@ajax>
+
+	* data.py (GSCSSubsetSC.__init__): The training data consists of
+	the default set of wav files, plus 2300 _silence_ files listed in
+	silence_training_list.txt, minus the training and validation files.
+
+2023-04-21  Michael  <michael@ajax>
+
+	* srnn.py (main): testing and validation files read by the
+	dataloader must contain relative paths. The dataloader's own
+	load_list function will prepend the current working directory to
+	produce an exhaustive path.
+
+2023-04-15  Michael Guravage  <michael@odysseus>
+
+	* srnn.py (main:gsc_training_dataset): We need not specify
+	folder_in_archive="SpeechCommands", this is the default.
+	(main:gsc_training_dataset): Ditto.
+
 2023-04-14  Michael Guravage  <michael@odysseus>
 
 	* config-v1-cuda.toml: Add new network_size parameter.
