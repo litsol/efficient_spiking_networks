@@ -7,6 +7,7 @@ This is the BPTT spiking recurrent neural network (srnn)
 example using the Google Speech Commands dataset.
 """
 
+import os
 import pprint
 import random
 import shutil
@@ -511,7 +512,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
                 filename = Path(*Path(filename).parts[-2:])  # Relative path
                 fp.write(f"{filename}\n")
 
-        logger.info("{Successfully created silence random noise files.")
+        logger.info("Successfully created silence random noise files.")
 
         # Unpack the auxiliary _silence_ testing
         # files into the existing _silence_ folder.
@@ -519,7 +520,7 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         with zipfile.ZipFile(silence_data, "r") as zip_ref:
             zip_ref.extractall(gsc)
 
-        logger.info("{Successfully unpacked auxiliary _silence_ files.")
+        logger.info("Successfully unpacked auxiliary _silence_ files.")
 
     # Unpack the auxiliary _unknown_ testing
     # files into a folder of the same name.
@@ -529,16 +530,29 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
         with zipfile.ZipFile(unknown_data, "r") as zip_ref:
             zip_ref.extractall(gsc)
 
-        logger.info("{Successfully unpacked auxiliary _unknown_ files.")
+        logger.info("Successfully unpacked auxiliary _unknown_ files.")
 
     # Install, i.e. copy, the srnn specific testing list.
     testing_list_srnn_src = (
         Path.cwd() / "auxiliary_data" / "testing_list_srnn.txt"
     )
     testing_list_srnn_dst = gsc / "testing_list_srnn.txt"
-    if not testing_list_srnn_dst.exists():
+
+    # Inquire the file modification times.
+    testing_list_srnn_src_mt = os.path.getmtime(testing_list_srnn_src)
+    testing_list_srnn_dst_mt = (
+        os.path.getmtime(testing_list_srnn_dst)
+        if testing_list_srnn_dst.exists()
+        else 0
+    )
+
+    # If the destination does't exist or the source is newer, install the file.
+    if (
+        not testing_list_srnn_dst.exists()
+        or testing_list_srnn_dst_mt < testing_list_srnn_src_mt
+    ):
         shutil.copyfile(testing_list_srnn_src, testing_list_srnn_dst)
-        logger.info("{Successfully copied testing_list_srnn.txt file.")
+        logger.info("Successfully copied testing_list_srnn.txt file.")
 
     # Create Class Label Dictionary.
 

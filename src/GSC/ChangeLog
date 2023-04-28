@@ -1,5 +1,9 @@
 2023-04-28  Michael  <michael@ajax>
 
+	* srnn.py (main): Install the testing_list_srnn.txt file if it
+	hasn't been installed already, or if the archive version is newer
+	than the installed version.
+
 	* data.py (GSCSSubsetSC.__init__): Read the testing_list_srnn.txt
 	file.
 
