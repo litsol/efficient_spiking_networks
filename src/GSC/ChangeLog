@@ -1,3 +1,22 @@
+2023-04-28  Michael  <michael@ajax>
+
+	* data.py (_get_speechcommands_metadata, get_metadata):
+	Copied these two functions from torchaudio/datasets/speechcommands.py.
+	This is how we handle the wav files from _silence_ and _unknown_ that
+	do not comform to the GSC naming convension.
+
+	(SpeechCommandsDataset): debug: Write Bojian's training, testing
+	and # validation lists to the file system.
+
+	(GSCSSubsetSC): debug: Write our training list to the
+	filesystem so we can examine it. The validation and testing lists
+	are explicit.
+
+	* srnn.py (main): The first thing to log in the configuration filename.
+	(main): Don't forget to log the network size.
+	(main): Unpack and install the auxiliary _silence_ and _unknown_
+	testing files.
+
 2023-04-22  Michael  <michael@ajax>
 
 	* data.py (GSCSSubsetSC.__init__): The training data consists of

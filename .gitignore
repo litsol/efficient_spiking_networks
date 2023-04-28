@@ -217,5 +217,7 @@ README.html
 github.css
 src/LOGS/
 src/GSC/google
+src/GSC/gsc_v1_data
+src/GSC/learn_from_true_label_gsc_v1_data.tgz
 
 # finis

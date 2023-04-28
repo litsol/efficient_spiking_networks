@@ -7,7 +7,7 @@ Classes that retrieve and manipualte input data.
 
 import os
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 import librosa
 import numpy as np
@@ -17,6 +17,45 @@ from torch.utils.data import Dataset
 from torchaudio.datasets import SPEECHCOMMANDS
 from torchaudio.datasets.utils import _load_waveform
 from utils import txt2list
+
+HASH_DIVIDER = "_nohash_"
+SAMPLE_RATE = 16000
+
+
+def _get_speechcommands_metadata(
+    filepath: str, path: str
+) -> Tuple[str, int, str, str, int]:
+    """
+    Besides the officially supported split method for datasets defined
+    by "validation_list.txt" and "testing_list.txt" over
+    "speech_commands_v0.0x.tar.gz" archives, an alternative split
+    method referred to in paragraph 2-3 of Section 7.1, references 13
+    and 14 of the original paper, and the checksums file from the
+    tensorflow_datasets package [1] is also supported.  Some filenames
+    in those "speech_commands_test_set_v0.0x.tar.gz" archives have the
+    form "xxx.wav.wav", so file extensions twice needs to be stripped
+    twice. [1] https://github.com/tensorflow/datasets/blob/master/
+    tensorflow_datasets/url_checksums/speech_commands.txt
+    """
+
+    relpath = os.path.relpath(filepath, path)
+    reldir, filename = os.path.split(relpath)
+    _, label = os.path.split(reldir)
+    speaker, _ = os.path.splitext(filename)
+    speaker, _ = os.path.splitext(speaker)
+
+    if label in ("_silence_", "_unknown_"):
+        speaker_id, utterance_number = None, 0
+    else:
+        (
+            speaker_id,
+            utterance_number,
+        ) = speaker.split(  # type: ignore
+            HASH_DIVIDER
+        )
+
+        utterance_number = int(utterance_number)
+    return relpath, SAMPLE_RATE, label, speaker_id, utterance_number
 
 
 class GSCSSubsetSC(SPEECHCOMMANDS):
@@ -78,6 +117,35 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
                 for w in self._walker  # pylint: disable=C0103
                 if w not in excludes  # pylint: disable=C0103
             ]  # noqa: E501 pylint: disable=C0103
+
+            # debug: write our training list to the filesystem so we
+            # can examine it. The validation and testing lists are
+            # explicit.
+
+            # with open("/tmp/training_list.txt",
+            #     mode="wt",
+            #     encoding="utf-8",
+            # ) as fileobj:
+            #     fileobj.write("\n".join(self._walker))
+
+    def get_metadata(self, n: int) -> Tuple[str, int, str, str, int]:
+        """
+        Get metadata for the n-th sample from the dataset. Returns
+        filepath instead of waveform, but otherwise returns the same
+        fields as:py:func:`__getitem__`.
+
+        Args: n (int): The index of the sample to be loaded
+
+        Returns:
+            Tuple of the following items;
+            str: Path to the audio
+            int: Sample rate
+            str: Label
+            str: Speaker ID
+            int: Utterance number
+        """
+        fileid = self._walker[n]
+        return _get_speechcommands_metadata(fileid, self._archive)
 
     def __getitem__(self, n):
         """This iterator return a tuple consisting of a waveform and
@@ -173,6 +241,21 @@ class SpeechCommandsDataset(Dataset):
                     full_name = os.path.join(root, filename)
                     self.filenames.append(full_name)
                     self.labels.append(label)
+
+                # debug: write Bojian's training, testing and
+                # validation lists to the file system.
+
+                # match mode:
+                #     case "train":
+                #         bojians_filename = "/tmp/bojian_training_list.txt"
+                #     case "test":
+                #         bojians_filename = "/tmp/bojian_testing_list.txt"
+                #     case "valid":
+                #         bojians_filename = "/tmp/bojian_validation_list.txt"
+                # with open(
+                #     bojians_filename, mode="wt", encoding="utf-8"
+                # ) as fileobj:
+                #     fileobj.write("\n".join(self.filenames))
 
         if max_nb_per_class is not None:
             selected_idx = []

@@ -53,8 +53,8 @@ NUMBER_OF_WORKERS = 4 if device.type == "cpu" else 8
 logger.info(f"The Dataloader will spawn {NUMBER_OF_WORKERS} worker processes.")
 
 # Data Directories
-TRAIN_DATA_ROOT = "./DATA/train"
-TEST_DATA_ROOT = "./DATA/test"
+TRAIN_DATA_ROOT = "./gsc_v1_data/train"
+TEST_DATA_ROOT = "./gsc_v1_data/test"
 
 # Specify the learning rate
 LEARNING_RATE = 3e-3  # 1.2e-2
@@ -486,7 +486,6 @@ model = RecurrentSpikingNetwork()
 criterion_f = nn.CrossEntropyLoss()  # nn.NLLLoss()
 
 model.to(device)
-
 
 test_acc_before_training = test(test_dataloader)
 logger.info(f"{test_acc_before_training=}")

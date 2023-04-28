@@ -10,6 +10,7 @@ example using the Google Speech Commands dataset.
 import pprint
 import random
 import sys
+import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -357,6 +358,9 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     logger.remove()
     logger.add(sys.stderr, level=config["logger"]["level"])
 
+    # The config file
+    logger.info(f"{config_file=}")
+
     # Use cuda if it's available.
     device = torch.device(  # pylint: disable=E1101
         "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -392,7 +396,8 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     logger.info(
         "\n".join(
             [
-                f"\n{learning_rate=}",
+                f"\n{network_size=}",
+                f"{learning_rate=}",
                 f"{epochs=}",
                 f"{batch_size=}",
                 f"{size=}",
@@ -506,6 +511,24 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
                 fp.write(f"{filename}\n")
 
         logger.info("{Successfully created silence random noise files.")
+
+        # Unpack the auxiliary _silence_ testing
+        # files into the existing _silence_ folder.
+        silence_data = Path.cwd() / "auxiliary_data" / "_silence_.zip"
+        with zipfile.ZipFile(silence_data, "r") as zip_ref:
+            zip_ref.extractall(gsc)
+
+        logger.info("{Successfully unpacked auxiliary _silence_ files.")
+
+    # Unpack the auxiliary _unknown_ testing
+    # files into a folder of the same name.
+    unknown_folder = gsc / "_unknown_"
+    if not unknown_folder.exists():
+        unknown_data = Path.cwd() / "auxiliary_data" / "_unknown_.zip"
+        with zipfile.ZipFile(unknown_data, "r") as zip_ref:
+            zip_ref.extractall(gsc)
+
+        logger.info("{Successfully unpacked auxiliary _unknown_ files.")
 
     # Create Class Label Dictionary.
 
