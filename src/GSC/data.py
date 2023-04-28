@@ -103,11 +103,11 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
                 "silence_validation_list.txt"
             )
         elif subset == "testing":
-            self._walker = load_list("testing_list.txt")
+            self._walker = load_list("testing_list_srnn.txt")
         elif subset == "training":
             self._walker += load_list("silence_training_list.txt")
             excludes = (
-                load_list("testing_list.txt")
+                load_list("testing_list_srnn.txt")
                 + load_list("validation_list.txt")
                 + load_list("silence_validation_list.txt")
             )

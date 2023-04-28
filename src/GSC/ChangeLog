@@ -1,5 +1,11 @@
 2023-04-28  Michael  <michael@ajax>
 
+	* data.py (GSCSSubsetSC.__init__): Read the testing_list_srnn.txt
+	file.
+
+	* srnn.py (main): Install the hand curated testing_list_srnn.txt
+	file.
+
 	* data.py (_get_speechcommands_metadata, get_metadata):
 	Copied these two functions from torchaudio/datasets/speechcommands.py.
 	This is how we handle the wav files from _silence_ and _unknown_ that

@@ -9,6 +9,7 @@ example using the Google Speech Commands dataset.
 
 import pprint
 import random
+import shutil
 import sys
 import zipfile
 from pathlib import Path
@@ -529,6 +530,15 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
             zip_ref.extractall(gsc)
 
         logger.info("{Successfully unpacked auxiliary _unknown_ files.")
+
+    # Install, i.e. copy, the srnn specific testing list.
+    testing_list_srnn_src = (
+        Path.cwd() / "auxiliary_data" / "testing_list_srnn.txt"
+    )
+    testing_list_srnn_dst = gsc / "testing_list_srnn.txt"
+    if not testing_list_srnn_dst.exists():
+        shutil.copyfile(testing_list_srnn_src, testing_list_srnn_dst)
+        logger.info("{Successfully copied testing_list_srnn.txt file.")
 
     # Create Class Label Dictionary.
 
