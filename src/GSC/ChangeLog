@@ -1,3 +1,10 @@
+2023-05-01  Michael Guravage  <michael@odysseus>
+
+	* data.py (GSCSSubsetSC.__init__): Since we're working in one
+	directory we need to remove the _unknown_ and _silence_ samples
+	from the training set, and then add the 2300 silence training
+	files.
+
 2023-04-28  Michael  <michael@ajax>
 
 	* srnn.py (main): Install the testing_list_srnn.txt file if it

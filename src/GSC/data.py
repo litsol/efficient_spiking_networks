@@ -105,9 +105,8 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
         elif subset == "testing":
             self._walker = load_list("testing_list_srnn.txt")
         elif subset == "training":
-            self._walker += load_list("silence_training_list.txt")
             excludes = (
-                load_list("testing_list_srnn.txt")
+                load_list("testing_list.txt")
                 + load_list("validation_list.txt")
                 + load_list("silence_validation_list.txt")
             )
@@ -115,8 +114,11 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
             self._walker = [
                 w
                 for w in self._walker  # pylint: disable=C0103
-                if w not in excludes  # pylint: disable=C0103
-            ]  # noqa: E501 pylint: disable=C0103
+                if w not in excludes
+                and "_unknown_" not in w
+                and "_silence_" not in w  # pylint: disable=C0103
+            ]
+            self._walker += load_list("silence_training_list.txt")
 
             # debug: write our training list to the filesystem so we
             # can examine it. The validation and testing lists are
