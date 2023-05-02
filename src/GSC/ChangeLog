@@ -1,3 +1,32 @@
+2023-05-02  Michael Guravage  <michael@odysseus>
+
+	* srnn.py (main): Reconfigured the two dataloaders, i.e.,
+	gsc_training_dataloader, and gsc_testing_dataloader. In partiular,
+	set shuffle=True.
+
+	(main): While we do need to write the first 260 random noise
+	filenames to silence_validation_list.txt, we needn't write the
+	remainging 2300 random filenames to any file. Their filenames are
+	found by the dataset in data.py.
+
+	* data.py (GSCSSubsetSC.__init__): Rearranged the composition of
+	the training set. Read the comments above the code. Here is a copy.
+
+        The parent class's constructor yields only those files that
+	conform to the GSC naming convention, e.g,
+	eight/037c445a_nohash_1.wav and even odballs like
+	_unknown_/bed_1528225c_nohash_2.wav.  This excludes our generated
+	random noise files.
+
+        We can either overload the parent class's functionality here in
+	our own constructor to include the ramdom noise files, or merely
+	add them names here. Their names are easily generated.
+
+        To compose our training set then, we first add our generated
+	random noise files, and then remove the exclusions.
+
+
+
 2023-05-01  Michael Guravage  <michael@odysseus>
 
 	* data.py (GSCSSubsetSC.__init__): Since we're working in one

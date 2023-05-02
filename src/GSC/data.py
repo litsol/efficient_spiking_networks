@@ -105,6 +105,24 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
         elif subset == "testing":
             self._walker = load_list("testing_list_srnn.txt")
         elif subset == "training":
+            # The parent class's constructor yields only those files
+            # that conform to the GSC naming convention, e.g,
+            # eight/037c445a_nohash_1.wav and even odballs like
+            # _unknown_/bed_1528225c_nohash_2.wav.  This excludes our
+            # generated random noise files.
+
+            # We can either overload the parent class's functionality
+            # here in our own constructor to include the ramdom noise
+            # files, or merely add them names here. Their names are
+            # easily generated.
+
+            # To compose our training set then, we first add
+            # our generated random noise files, and then remove
+            # the exclusions.
+
+            # fmt: off
+            self._walker += [os.path.normpath(os.path.join(self._path, filename.strip())) for filename in [f"_silence_/rd_silence_{i}.wav" for i in range(2560)]]  # noqa: E501 pylint: disable=C0301
+            # fmt: on
             excludes = (
                 load_list("testing_list.txt")
                 + load_list("validation_list.txt")
@@ -114,11 +132,8 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
             self._walker = [
                 w
                 for w in self._walker  # pylint: disable=C0103
-                if w not in excludes
-                and "_unknown_" not in w
-                and "_silence_" not in w  # pylint: disable=C0103
+                if w not in excludes and "_unknown_" not in w
             ]
-            self._walker += load_list("silence_training_list.txt")
 
             # debug: write our training list to the filesystem so we
             # can examine it. The validation and testing lists are
@@ -244,20 +259,20 @@ class SpeechCommandsDataset(Dataset):
                     self.filenames.append(full_name)
                     self.labels.append(label)
 
-                # debug: write Bojian's training, testing and
-                # validation lists to the file system.
+        # debug: write Bojian's training, testing and
+        # validation lists to the file system.
 
-                # match mode:
-                #     case "train":
-                #         bojians_filename = "/tmp/bojian_training_list.txt"
-                #     case "test":
-                #         bojians_filename = "/tmp/bojian_testing_list.txt"
-                #     case "valid":
-                #         bojians_filename = "/tmp/bojian_validation_list.txt"
-                # with open(
-                #     bojians_filename, mode="wt", encoding="utf-8"
-                # ) as fileobj:
-                #     fileobj.write("\n".join(self.filenames))
+        # match mode:
+        #     case "train":
+        #         bojians_filename = "/tmp/bojian_training_list.txt"
+        #     case "test":
+        #         bojians_filename = "/tmp/bojian_testing_list.txt"
+        #     case "valid":
+        #         bojians_filename = "/tmp/bojian_validation_list.txt"
+        # with open(
+        #     bojians_filename, mode="wt", encoding="utf-8"
+        # ) as fileobj:
+        #     fileobj.write("\n".join(self.filenames))
 
         if max_nb_per_class is not None:
             selected_idx = []

@@ -504,14 +504,6 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
                 filename = Path(*Path(filename).parts[-2:])  # Relative path
                 fp.write(f"{filename}\n")
 
-        # Write the remaining 2300 filenames to silence_training_list.txt.
-        with open(
-            gsc / "silence_training_list.txt", mode="w", encoding="utf-8"
-        ) as fp:  # pylint: disable=C0103
-            for filename in silence_files[260:]:
-                filename = Path(*Path(filename).parts[-2:])  # Relative path
-                fp.write(f"{filename}\n")
-
         logger.info("Successfully created silence random noise files.")
 
         # Unpack the auxiliary _silence_ testing
@@ -620,10 +612,9 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     gsc_training_dataloader = torch.utils.data.DataLoader(
         gsc_training_dataset,
         batch_size=batch_size,
-        shuffle=False,
-        drop_last=False,
-        collate_fn=collate_fn,
+        shuffle=True,
         num_workers=number_of_workers,
+        collate_fn=collate_fn,
         pin_memory=pin_memory,
     )
     gsc_features, gsc_labels = next(iter(gsc_training_dataloader))
@@ -649,10 +640,9 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     gsc_testing_dataloader = torch.utils.data.DataLoader(
         gsc_testing_dataset,
         batch_size=batch_size,
-        shuffle=False,
-        drop_last=False,
-        collate_fn=collate_fn,
+        shuffle=True,
         num_workers=number_of_workers,
+        collate_fn=collate_fn,
         pin_memory=pin_memory,
     )
 
