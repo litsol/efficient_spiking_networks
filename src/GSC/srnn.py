@@ -7,12 +7,9 @@ This is the BPTT spiking recurrent neural network (srnn)
 example using the Google Speech Commands dataset.
 """
 
-import os
 import pprint
 import random
-import shutil
 import sys
-import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -486,13 +483,12 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
             nb_files=2560,
             noise_file=background_noise_file,
             output_folder=silence_folder,
-            file_prefix="rd_silence_",
+            file_prefix="noise_nohash_",
             sr=sample_rate,
         )
 
         # Compose a list of the new noise files.  Write the first 260
-        # names to silence_validation_list.txt, and the remaining 2300
-        # to silence_training_list.txt.
+        # names to silence_validation_list.txt
 
         silence_files = [*gen_find("*.wav", silence_folder)]
 
@@ -505,46 +501,6 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
                 fp.write(f"{filename}\n")
 
         logger.info("Successfully created silence random noise files.")
-
-        # Unpack the auxiliary _silence_ testing
-        # files into the existing _silence_ folder.
-        silence_data = Path.cwd() / "auxiliary_data" / "_silence_.zip"
-        with zipfile.ZipFile(silence_data, "r") as zip_ref:
-            zip_ref.extractall(gsc)
-
-        logger.info("Successfully unpacked auxiliary _silence_ files.")
-
-    # Unpack the auxiliary _unknown_ testing
-    # files into a folder of the same name.
-    unknown_folder = gsc / "_unknown_"
-    if not unknown_folder.exists():
-        unknown_data = Path.cwd() / "auxiliary_data" / "_unknown_.zip"
-        with zipfile.ZipFile(unknown_data, "r") as zip_ref:
-            zip_ref.extractall(gsc)
-
-        logger.info("Successfully unpacked auxiliary _unknown_ files.")
-
-    # Install, i.e. copy, the srnn specific testing list.
-    testing_list_srnn_src = (
-        Path.cwd() / "auxiliary_data" / "testing_list_srnn.txt"
-    )
-    testing_list_srnn_dst = gsc / "testing_list_srnn.txt"
-
-    # Inquire the file modification times.
-    testing_list_srnn_src_mt = os.path.getmtime(testing_list_srnn_src)
-    testing_list_srnn_dst_mt = (
-        os.path.getmtime(testing_list_srnn_dst)
-        if testing_list_srnn_dst.exists()
-        else 0
-    )
-
-    # If the destination does't exist or the source is newer, install the file.
-    if (
-        not testing_list_srnn_dst.exists()
-        or testing_list_srnn_dst_mt < testing_list_srnn_src_mt
-    ):
-        shutil.copyfile(testing_list_srnn_src, testing_list_srnn_dst)
-        logger.info("Successfully copied testing_list_srnn.txt file.")
 
     # Create Class Label Dictionary.
 
@@ -563,15 +519,6 @@ def main(config_file: Path) -> None:  # pylint: disable=R0914,R0915
     logger.info(
         f"Class Labels[{len(class_labels)}]:\n{pp.pformat(class_labels)}"
     )
-
-    # Compose the class dictionary by choosing
-    # the first twn categories sequentially.
-    # class_dict = dict(
-    #     {j: i for i, j in enumerate(class_labels[:10])},
-    #     **{"_silence_": 10},
-    #     **{"_unknown_": 11},
-    #     **{j: 11 for _, j in enumerate(class_labels[11:])},
-    # )
 
     # Compose the class dictionary by choosing
     # the first ten categories randomly.

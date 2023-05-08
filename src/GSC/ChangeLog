@@ -1,3 +1,17 @@
+2023-05-08  Michael Guravage  <michael@odysseus>
+
+	* utils.py Removed unused code.
+
+	* data.py (GSCSSubsetSC): Using the standard GSC dataset means we
+	can remove all the code written to accomidate Bojian's
+	non-conventional filenames.
+	(WhiteNoise): Removed unused WhiteNoise class.
+
+	* srnn.py (main): Using the standard GSC dataset means we can
+	remove all the code written to unpack and install Bojian's
+	non-conventional data, i.e., 'training/{_silence_,_unknown_}'
+	directories and his training_list.txt.
+
 2023-05-02  Michael Guravage  <michael@odysseus>
 
 	* srnn.py (main): Reconfigured the two dataloaders, i.e.,

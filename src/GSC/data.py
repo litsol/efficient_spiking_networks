@@ -7,55 +7,13 @@ Classes that retrieve and manipualte input data.
 
 import os
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import librosa
 import numpy as np
-import scipy.io.wavfile as wav
 import torch
-from torch.utils.data import Dataset
 from torchaudio.datasets import SPEECHCOMMANDS
 from torchaudio.datasets.utils import _load_waveform
-from utils import txt2list
-
-HASH_DIVIDER = "_nohash_"
-SAMPLE_RATE = 16000
-
-
-def _get_speechcommands_metadata(
-    filepath: str, path: str
-) -> Tuple[str, int, str, str, int]:
-    """
-    Besides the officially supported split method for datasets defined
-    by "validation_list.txt" and "testing_list.txt" over
-    "speech_commands_v0.0x.tar.gz" archives, an alternative split
-    method referred to in paragraph 2-3 of Section 7.1, references 13
-    and 14 of the original paper, and the checksums file from the
-    tensorflow_datasets package [1] is also supported.  Some filenames
-    in those "speech_commands_test_set_v0.0x.tar.gz" archives have the
-    form "xxx.wav.wav", so file extensions twice needs to be stripped
-    twice. [1] https://github.com/tensorflow/datasets/blob/master/
-    tensorflow_datasets/url_checksums/speech_commands.txt
-    """
-
-    relpath = os.path.relpath(filepath, path)
-    reldir, filename = os.path.split(relpath)
-    _, label = os.path.split(reldir)
-    speaker, _ = os.path.splitext(filename)
-    speaker, _ = os.path.splitext(speaker)
-
-    if label in ("_silence_", "_unknown_"):
-        speaker_id, utterance_number = None, 0
-    else:
-        (
-            speaker_id,
-            utterance_number,
-        ) = speaker.split(  # type: ignore
-            HASH_DIVIDER
-        )
-
-        utterance_number = int(utterance_number)
-    return relpath, SAMPLE_RATE, label, speaker_id, utterance_number
 
 
 class GSCSSubsetSC(SPEECHCOMMANDS):
@@ -103,26 +61,8 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
                 "silence_validation_list.txt"
             )
         elif subset == "testing":
-            self._walker = load_list("testing_list_srnn.txt")
+            self._walker = load_list("testing_list.txt")
         elif subset == "training":
-            # The parent class's constructor yields only those files
-            # that conform to the GSC naming convention, e.g,
-            # eight/037c445a_nohash_1.wav and even odballs like
-            # _unknown_/bed_1528225c_nohash_2.wav.  This excludes our
-            # generated random noise files.
-
-            # We can either overload the parent class's functionality
-            # here in our own constructor to include the ramdom noise
-            # files, or merely add them names here. Their names are
-            # easily generated.
-
-            # To compose our training set then, we first add
-            # our generated random noise files, and then remove
-            # the exclusions.
-
-            # fmt: off
-            self._walker += [os.path.normpath(os.path.join(self._path, filename.strip())) for filename in [f"_silence_/rd_silence_{i}.wav" for i in range(2560)]]  # noqa: E501 pylint: disable=C0301
-            # fmt: on
             excludes = (
                 load_list("testing_list.txt")
                 + load_list("validation_list.txt")
@@ -132,7 +72,7 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
             self._walker = [
                 w
                 for w in self._walker  # pylint: disable=C0103
-                if w not in excludes and "_unknown_" not in w
+                if w not in excludes
             ]
 
             # debug: write our training list to the filesystem so we
@@ -144,25 +84,6 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
             #     encoding="utf-8",
             # ) as fileobj:
             #     fileobj.write("\n".join(self._walker))
-
-    def get_metadata(self, n: int) -> Tuple[str, int, str, str, int]:
-        """
-        Get metadata for the n-th sample from the dataset. Returns
-        filepath instead of waveform, but otherwise returns the same
-        fields as:py:func:`__getitem__`.
-
-        Args: n (int): The index of the sample to be loaded
-
-        Returns:
-            Tuple of the following items;
-            str: Path to the audio
-            int: Sample rate
-            str: Label
-            str: Speaker ID
-            int: Utterance number
-        """
-        fileid = self._walker[n]
-        return _get_speechcommands_metadata(fileid, self._archive)
 
     def __getitem__(self, n):
         """This iterator return a tuple consisting of a waveform and
@@ -184,144 +105,6 @@ class GSCSSubsetSC(SPEECHCOMMANDS):
             waveform,
             self.class_dict[metadata[2]],
         )
-
-
-class SpeechCommandsDataset(Dataset):
-    """
-    Class Docstring
-    """
-
-    def __init__(  # pylint: disable=R0912,R0913,R0914
-        self, data_root, label_dct, mode, transform=None, max_nb_per_class=None
-    ):
-        """
-        Function Docstring
-        """
-
-        assert mode in [
-            "train",
-            "valid",
-            "test",
-        ], 'mode should be "train", "valid" or "test"'
-
-        self.filenames = []
-        self.labels = []
-        self.mode = mode
-        self.transform = transform
-
-        if (
-            self.mode == "train"  # pylint: disable=R1714
-            or self.mode == "valid"
-        ):
-            # Create lists of 'wav' files.
-            testing_list = txt2list(
-                os.path.join(data_root, "testing_list.txt")
-            )
-            validation_list = txt2list(
-                os.path.join(data_root, "validation_list.txt")
-            )
-            # silence_validation_list.txt not in gsc dataset
-            validation_list += txt2list(
-                os.path.join(data_root, "silence_validation_list.txt")
-            )
-        else:
-            testing_list = []
-            validation_list = []
-
-        for root, dirs, files in os.walk(data_root):  # pylint: disable=W0612
-            if "_background_noise_" in root:
-                continue
-            for filename in files:
-                if not filename.endswith(".wav"):
-                    # Ignore files whose suffix is not 'wav'.
-                    continue
-
-                # Extract the cwd without a path.
-                command = root.split("/")[-1]
-
-                label = label_dct.get(command)
-                if label is None:
-                    print(f"ignored command: {command}")
-                    break  # Out of here!
-                partial_path = "/".join([command, filename])
-
-                # These are Boolean values!
-                testing_file = partial_path in testing_list
-                validation_file = partial_path in validation_list
-                training_file = not testing_file and not validation_file
-
-                if (
-                    (self.mode == "test")
-                    or (self.mode == "train" and training_file)
-                    or (self.mode == "valid" and validation_file)
-                ):
-                    full_name = os.path.join(root, filename)
-                    self.filenames.append(full_name)
-                    self.labels.append(label)
-
-        # debug: write Bojian's training, testing and
-        # validation lists to the file system.
-
-        # match mode:
-        #     case "train":
-        #         bojians_filename = "/tmp/bojian_training_list.txt"
-        #     case "test":
-        #         bojians_filename = "/tmp/bojian_testing_list.txt"
-        #     case "valid":
-        #         bojians_filename = "/tmp/bojian_validation_list.txt"
-        # with open(
-        #     bojians_filename, mode="wt", encoding="utf-8"
-        # ) as fileobj:
-        #     fileobj.write("\n".join(self.filenames))
-
-        if max_nb_per_class is not None:
-            selected_idx = []
-            for label in np.unique(self.labels):
-                label_idx = [
-                    i
-                    for i, x in enumerate(self.labels)  # pylint: disable=C0103
-                    if x == label  # noqa: E501 pylint: disable=C0103
-                ]
-                if len(label_idx) < max_nb_per_class:
-                    selected_idx += label_idx
-                else:
-                    selected_idx += list(
-                        np.random.choice(label_idx, max_nb_per_class)
-                    )
-
-            self.filenames = [self.filenames[idx] for idx in selected_idx]
-            self.labels = [self.labels[idx] for idx in selected_idx]
-
-        if self.mode == "train":
-            label_weights = 1.0 / np.unique(self.labels, return_counts=True)[1]
-            label_weights /= np.sum(label_weights)
-            self.weights = torch.DoubleTensor(  # pylint: disable=E1101
-                [label_weights[label] for label in self.labels]
-            )
-
-    def __len__(self):
-        """
-        Function Docstring
-        """
-
-        return len(self.labels)
-
-    def __getitem__(self, idx):
-        """
-        Function Docstring
-        """
-
-        filename = self.filenames[idx]
-        item = wav.read(filename)[1].astype(float)
-        m = np.max(np.abs(item))  # pylint: disable=C0103
-        if m > 0:
-            item /= m
-        if self.transform is not None:
-            item = self.transform(item)
-
-        label = self.labels[idx]
-
-        return item, label
 
 
 class Pad:  # pylint: disable=R0903
@@ -351,53 +134,6 @@ class Pad:  # pylint: disable=R0903
             constant_values=(0, 0),
         )
         return padded_wav
-
-
-# class RandomNoise:  # pylint: disable=R0903
-#     """Class Docstring"""
-
-#     def __init__(self, noise_files, size, coef):
-#         """Function Docstring"""
-#         self.size = size
-#         self.noise_files = noise_files
-#         self.coef = coef
-
-#     def __call__(self, waveform):
-#         """Function Docstring"""
-#         if np.random.random() < 0.8:
-#             noise_wav = get_random_noise(self.noise_files, self.size)
-#             noise_power = (noise_wav**2).mean()
-#             sig_power = (waveform**2).mean()
-
-#             noisy_wav = waveform + self.coef * noise_wav * np.sqrt(
-#                 sig_power / noise_power
-#             )
-
-#         else:
-#             noisy_wav = waveform
-
-#         return noisy_wav
-
-
-# class RandomShift:  # pylint: disable=R0903
-#     """Class Docstring"""
-
-#     def __init__(self, min_shift, max_shift):
-#         """Function Docstring"""
-#         self.min_shift = min_shift
-#         self.max_shift = max_shift
-
-#     def __call__(self, waveform):
-#         """Function Docstring"""
-#         shift = np.random.randint(self.min_shift, self.max_shift + 1)
-#         shifted_wav = np.roll(waveform, shift)
-
-#         if shift > 0:
-#             shifted_wav[:shift] = 0
-#         elif shift < 0:
-#             shifted_wav[shift:] = 0
-
-#         return shifted_wav
 
 
 class MelSpectrogram:  # pylint: disable=R0902,R0903
@@ -493,28 +229,6 @@ class Normalize:  # pylint: disable=R0903
 
         return input / std
 
-
-# class WhiteNoise:  # pylint: disable=R0903
-#     """Class Docstring"""
-
-#     def __init__(self, size, coef_max):
-#         """Function Docstring"""
-#         self.size = size
-#         self.coef_max = coef_max
-
-#     def __call__(self, waveform):
-#         """Function Docstring"""
-#         noise_wav = np.random.normal(size=self.size)
-#         noise_power = (noise_wav**2).mean()
-#         sig_power = (waveform**2).mean()
-
-#         coef = np.random.uniform(0.0, self.coef_max)
-
-#         noisy_wav = waveform + coef * noise_wav * np.sqrt(
-#             sig_power / noise_power
-#         )
-
-#         return noisy_wav
 
 # finis
 
